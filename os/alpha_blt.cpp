@@ -156,8 +156,8 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
     {
         height = (buffer_height - y);
     }
-
-    u8 *buffer_pixels = buffer + (y * buffer_width + x);
+    
+    u8 *buffer_line =  buffer + (y * buffer_width + x);
 
     if((height > 0) && (width > 0))
     {
@@ -173,6 +173,7 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
 
         for(y = 0; y < height; ++y)
         {
+            u8 *buffer_pixels = buffer_line;
             u32 *current_source_record = current_source_scan + 1;
 
             // NOTE: Prestep the source x
@@ -233,14 +234,14 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
                 x += length;
             }
 
-            buffer_pixels += buffer_width;
+            buffer_line += buffer_width;
             current_source_scan = (u32 *)((u8 *)current_source_scan + run_length(*current_source_scan));
         }
     }
 }
 
-#define BUFFER_WIDTH 512
-#define BUFFER_HEIGHT 512
+#define BUFFER_WIDTH 8 
+#define BUFFER_HEIGHT 2
 
 int main(void)
 {
@@ -249,25 +250,13 @@ int main(void)
         0,0,0,1,1,0,0,0,
         0,0,0,1,1,0,0,0
     };
-
     static u8 compress_bitmap[32] = {};
-    compress_u8sprite(compress_bitmap, bitmap, 8, 2, 0);
-
     static u8 buffer[BUFFER_WIDTH*BUFFER_HEIGHT];
-    
-    u32 *line1 = (u32 *)compress_bitmap;
-    u32 *line2 = (u32 *)(compress_bitmap + *line1);
-    
-    printf("1 line length %d\n", rle_lenght(*line1));
-    printf("2 line length %d\n", rle_lenght(*line2));
-    
-    return 0;
-}
 
-#if 0
-INT WINAPI 
-WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
-{
+    i32 break_here = 0;
+
+    compress_u8sprite(compress_bitmap, bitmap, 8, 2, 0);
+    transparent_blt_rle(buffer, BUFFER_WIDTH, BUFFER_HEIGHT, 0, 0, compress_bitmap, 8, 2, 0);
+    
     return 0;
 }
-#endif
