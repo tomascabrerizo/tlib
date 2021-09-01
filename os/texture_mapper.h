@@ -23,7 +23,7 @@ struct Gradients
 };
 
 // NOTE: Gradients constructor
-Gradients gradients(Point3D *vertices);
+Gradients new_gradients(Point3D *vertices);
 
 struct Edge
 {
@@ -36,17 +36,17 @@ struct Edge
 };
 
 // NOTE: Edge constructor
-Edge edge(Gradients *gradients, Point3D *vertices, I32 top, I32 bottom);
+Edge new_edge(Gradients *gradients, Point3D *vertices, I32 top, I32 bottom);
 I32 edge_step(Edge *edge);
 
 // NOTE: Texture mapper functions
 
 void texture_map_triangle(U32 *buffer, U32 buffer_width, U32 buffer_height,
-                          U32 *texture, U32 texture_width, U32 Texture_height, 
+                          U32 *texture, U32 texture_width, U32 texture_height, 
                           Point3D *vertices);
 
 void draw_scan_line(U32 *buffer, U32 buffer_width, U32 buffer_height,
-                    U32 *texture, U32 texture_width, U32 Texture_height,
+                    U32 *texture, U32 texture_width, U32 texture_height,
                     Gradients *gradients, Edge *left, Edge *right);
 
 
