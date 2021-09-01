@@ -1,35 +1,19 @@
 #include <Windows.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
-typedef float r32;
-typedef uint8_t  b8;
-typedef uint32_t b32;
+#include "tlib_types.h"
 
-#define align_64(value) (((value) + 0x7) & ~0x7)
-#define align_32(value) (((value) + 0x3) & ~0x3)
+#define rle_newline(length) ((U32)(0x00000000 | (U16)(length)))
+#define rle_skiprun(length) ((U32)(0x00010000 | (U16)(length)))
+#define rle_copyrun(length) ((U32)(0x00020000 | (U16)(length)))
 
-#define array_count(array) (sizeof(array)/sizeof(array[0]))
+#define rle_lenght(word) ((U32)(word & 0xFFFF))
 
-#define rle_newline(length) ((u32)(0x00000000 | (u16)(length)))
-#define rle_skiprun(length) ((u32)(0x00010000 | (u16)(length)))
-#define rle_copyrun(length) ((u32)(0x00020000 | (u16)(length)))
-
-#define rle_lenght(word) ((u32)(word & 0xFFFF))
-
-#define is_skiprun(word) (((u32)word & 0xFFFF0000) == 0x00010000)
-#define is_copyrun(word) (((u32)word & 0xFFFF0000) == 0x00020000)
-#define run_length(word) ((u32)(word & 0xFFFF))
+#define is_skiprun(word) (((U32)word & 0xFFFF0000) == 0x00010000)
+#define is_copyrun(word) (((U32)word & 0xFFFF0000) == 0x00020000)
+#define run_length(word) ((U32)(word & 0xFFFF))
 
 enum Rle_State
 {
@@ -37,22 +21,21 @@ enum Rle_State
     in_copyrun,
 };
 
-void compress_u8sprite(u8 *output_buffer, u8 *source, u32 width, u32 height, u8 transparent_color)
+void compress_u8sprite(U8 *output_buffer, U8 *source, U32 width, U32 height, U8 transparent_color)
 {
+    U32 *output_record = (U32 *)output_buffer;
     
-    u32 *output_record = (u32 *)output_buffer;
-    
-    u8 *scan_line = source;
-    for(u32 y = 0; y < height; ++y)
+    U8 *scan_line = source;
+    for(U32 y = 0; y < height; ++y)
     {
-        u32 line_lenght = 4;
-        u32 current_run_lenght = 1;
+        U32 line_lenght = 4;
+        U32 current_run_lenght = 1;
 
-        u32 *new_line_record = output_record;
+        U32 *new_line_record = output_record;
         output_record += 1;
-        u8 *output_byte = (u8 *)(output_record + 1);
+        U8 *output_byte = (U8 *)(output_record + 1);
         
-        u8 *pixel = scan_line;
+        U8 *pixel = scan_line;
         
         // NOTE: Init the states
         Rle_State state;
@@ -70,7 +53,7 @@ void compress_u8sprite(u8 *output_buffer, u8 *source, u32 width, u32 height, u8 
         
         ++pixel;
         
-        for(u32 x = 1; x < width; ++x)
+        for(U32 x = 1; x < width; ++x)
         {
             if(*pixel == transparent_color)
             {
@@ -82,7 +65,7 @@ void compress_u8sprite(u8 *output_buffer, u8 *source, u32 width, u32 height, u8 
                 {
                     // NOTE: Write copyrun and change state to skiprun
                     *output_record = rle_copyrun(current_run_lenght);
-                    output_record = (u32 *)output_byte;
+                    output_record = (U32 *)output_byte;
                     state = in_skiprun;
                     current_run_lenght = 1;
                     line_lenght += 4;
@@ -101,7 +84,7 @@ void compress_u8sprite(u8 *output_buffer, u8 *source, u32 width, u32 height, u8 
                     // NOTE: Write skiprun and change state to copyrun
                     *output_record = rle_skiprun(current_run_lenght);
                     output_record++;
-                    output_byte = (u8 *)(output_record + 1);
+                    output_byte = (U8 *)(output_record + 1);
                     state = in_copyrun;
                     *output_byte++ = *pixel;
                     current_run_lenght = 1;
@@ -122,17 +105,17 @@ void compress_u8sprite(u8 *output_buffer, u8 *source, u32 width, u32 height, u8 
         else
         {
             *output_record = rle_copyrun(current_run_lenght);
-            output_record = (u32 *)output_byte;
+            output_record = (U32 *)output_byte;
         }
         *new_line_record = rle_newline(line_lenght);
     }
 }
 
-void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x, int y, 
-                         u8 *source, int source_width, int source_height, u8 transparent_color)
+void transparent_blt_rle(U8 *buffer, int buffer_width, int buffer_height, int x, int y, 
+                         U8 *source, int source_width, int source_height, U8 transparent_color)
 {
-    u32 x_source = 0;
-    u32 y_source = 0;
+    U32 x_source = 0;
+    U32 y_source = 0;
 
     int width = source_width;
     int height = source_height;
@@ -157,24 +140,24 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
         height = (buffer_height - y);
     }
     
-    u8 *buffer_line =  buffer + (y * buffer_width + x);
+    U8 *buffer_line =  buffer + (y * buffer_width + x);
 
     if((height > 0) && (width > 0))
     {
         int x = 0;
         int y = 0;
-        u32 *current_source_scan = (u32 *)source;
+        U32 *current_source_scan = (U32 *)source;
 
         // NOTE: Prestep the source y
         for(y = 0; y < y_source; ++y)
         {
-            current_source_scan = (u32 *)((u8 *)current_source_scan + run_length(*current_source_scan));
+            current_source_scan = (U32 *)((U8 *)current_source_scan + run_length(*current_source_scan));
         }
 
         for(y = 0; y < height; ++y)
         {
-            u8 *buffer_pixels = buffer_line;
-            u32 *current_source_record = current_source_scan + 1;
+            U8 *buffer_pixels = buffer_line;
+            U32 *current_source_record = current_source_scan + 1;
 
             // NOTE: Prestep the source x
             x = 0;
@@ -192,7 +175,7 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
                     {
                         // NOTE: Copy overlap pixel to buffer 
                         // NOTE: Get pointer to data
-                        u8 *copy_run = (u8 *)current_source_record + 4;
+                        U8 *copy_run = (U8 *)current_source_record + 4;
                         // NOTE: Prestep to desired pixels
                         copy_run += run_length(*current_source_record) - overlap;
                         memcpy(buffer_pixels, copy_run, active_overlap);
@@ -204,7 +187,7 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
                 // Skip to next report
                 if(is_copyrun(*current_source_record))
                 {
-                    current_source_record = (u32 *)((u8 *)current_source_record + run_length(*current_source_record));
+                    current_source_record = (U32 *)((U8 *)current_source_record + run_length(*current_source_record));
                 }
                 ++current_source_record;
             }
@@ -219,7 +202,7 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
 
                 if(is_copyrun(*current_source_record))
                 {
-                    u8 *copy_run = (u8 *)current_source_record + 4;
+                    U8 *copy_run = (U8 *)current_source_record + 4;
                     memcpy(buffer_pixels, copy_run, active_pixels);
                 }
                 // NOTE: Skip to the next dest pixel
@@ -228,14 +211,14 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
                 // Skip to next report
                 if(is_copyrun(*current_source_record))
                 {
-                    current_source_record = (u32 *)((u8 *)current_source_record + length);
+                    current_source_record = (U32 *)((U8 *)current_source_record + length);
                 }
                 ++current_source_record;
                 x += length;
             }
 
             buffer_line += buffer_width;
-            current_source_scan = (u32 *)((u8 *)current_source_scan + run_length(*current_source_scan));
+            current_source_scan = (U32 *)((U8 *)current_source_scan + run_length(*current_source_scan));
         }
     }
 }
@@ -245,15 +228,15 @@ void transparent_blt_rle(u8 *buffer, int buffer_width, int buffer_height, int x,
 
 int main(void)
 {
-    static u8 bitmap[16] = 
+    static U8 bitmap[16] = 
     {
         0,0,0,1,1,0,0,0,
         0,0,0,1,1,0,0,0
     };
-    static u8 compress_bitmap[32] = {};
-    static u8 buffer[BUFFER_WIDTH*BUFFER_HEIGHT];
+    static U8 compress_bitmap[32] = {};
+    static U8 buffer[BUFFER_WIDTH*BUFFER_HEIGHT];
 
-    i32 break_here = 0;
+    I32 break_here = 0;
 
     compress_u8sprite(compress_bitmap, bitmap, 8, 2, 0);
     transparent_blt_rle(buffer, BUFFER_WIDTH, BUFFER_HEIGHT, 0, 0, compress_bitmap, 8, 2, 0);

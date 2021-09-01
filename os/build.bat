@@ -3,5 +3,5 @@
 if not exist .\build mkdir .\build
 
 pushd .\build
-cl -nologo ..\alpha_blt.cpp -Zi -FC
+cl -nologo ..\tlib_build.cpp -Zi -FC
 popd
