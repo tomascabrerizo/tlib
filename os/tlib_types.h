@@ -2,6 +2,7 @@
 #define TLIB_TYPES_H
 
 #include <stdint.h>
+#include <math.h>
 
 typedef uint8_t U8;
 typedef uint16_t U16;
@@ -19,4 +20,11 @@ typedef uint32_t B32;
 #define align_32(value) (((value) + 0x3) & ~0x3)
 
 #define array_count(array) (sizeof(array)/sizeof(array[0]))
+
+inline I32 ceil_f32i32(F32 value)
+{
+    I32 result = ceilf(value);
+    return result;
+}
+
 #endif //TLIB_TYPES_H
