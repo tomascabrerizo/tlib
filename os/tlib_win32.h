@@ -9,7 +9,12 @@ struct Win32BackBuffer
     HBITMAP bitmap;
     BITMAPINFO bitmapInfo;
     U32 *pixels;
-    U32 widht, height;
+    U32 width, height;
+};
+
+struct StarField
+{
+    V3F32 pos[512];
 };
 
 #endif //TLIB_WIN32_H

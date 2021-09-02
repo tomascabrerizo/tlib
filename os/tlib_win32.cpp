@@ -15,11 +15,11 @@ void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buff
     // NOTE: Get the actual size of the renderable window
     RECT windowRect = {};
     GetClientRect(window, &windowRect);
-    buffer->widht = windowRect.right - windowRect.left;
+    buffer->width = windowRect.right - windowRect.left;
     buffer->height = windowRect.bottom - windowRect.top;
     // NOTE: Init the bitmap info
     buffer->bitmapInfo.bmiHeader.biSize = sizeof(buffer->bitmapInfo.bmiHeader);
-    buffer->bitmapInfo.bmiHeader.biWidth = buffer->widht;
+    buffer->bitmapInfo.bmiHeader.biWidth = buffer->width;
     buffer->bitmapInfo.bmiHeader.biHeight = -buffer->height;
     buffer->bitmapInfo.bmiHeader.biPlanes = 1;
     buffer->bitmapInfo.bmiHeader.biBitCount = 32;
@@ -34,13 +34,13 @@ void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buff
 
 void Win32BlitBackBuffer(HDC destDC, Win32BackBuffer *buffer)
 {
-    BitBlt(destDC, 0, 0, buffer->widht, buffer->height, buffer->bufferDC, 0, 0, SRCCOPY);
+    BitBlt(destDC, 0, 0, buffer->width, buffer->height, buffer->bufferDC, 0, 0, SRCCOPY);
 }
 
 void Win32ClearBackBuffer(Win32BackBuffer *buffer, U8 red, U8 green, U8 blue)
 {
     U32 color = ((U32)red << 16)|((U32)green << 8)|((U32)blue << 0);
-    for(U32 index = 0; index < buffer->widht*buffer->height; ++index)
+    for(U32 index = 0; index < buffer->width*buffer->height; ++index)
     {
         buffer->pixels[index] = color;
     }
@@ -48,9 +48,8 @@ void Win32ClearBackBuffer(Win32BackBuffer *buffer, U8 red, U8 green, U8 blue)
 
 void Win32DrawPixel(Win32BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue)
 {
-    // TODO: Do pixel bounds check
     U32 color = ((U32)red << 16)|((U32)green << 8)|((U32)blue << 0);
-    buffer->pixels[y * buffer->widht + x] = color;
+    buffer->pixels[y * buffer->width+ x] = color;
 }
 
 LRESULT CALLBACK 
@@ -79,6 +78,48 @@ Win32WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     return result;
 }
 
+void StarFieldInit(StarField *starField)
+{
+    // NOTE: The coordinates are normallize to -1 to 1
+    for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
+    {
+        starField->pos[index].x = (RandomF32() - 0.5f) * 2;
+        starField->pos[index].y = (RandomF32() - 0.5f) * 2;
+        starField->pos[index].z = (RandomF32() - 0.5f) * 2;
+    }
+}
+
+void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starField)
+{
+    // NOTE: Project coordinate to the buffer width and height
+    U32 halfBufferWidht = 0.5f*buffer->width;
+    U32 halfBufferHeight = 0.5f*buffer->height;
+    for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
+    {
+        // NOTE: Update Star
+        starField->pos[index].z -= dt;
+
+        // NOTE: Render star
+        F32 z = starField->pos[index].z;
+        I32 screenX = (starField->pos[index].x/z * halfBufferWidht) + halfBufferWidht;
+        I32 screenY = (starField->pos[index].y/z * halfBufferHeight) + halfBufferHeight;
+        
+        if(screenX < 0 || screenX >= buffer->width || 
+           screenY < 0 || screenY >= buffer->height ||
+           starField->pos[index].z <= 0)
+        {
+            starField->pos[index].x = (RandomF32() - 0.5f) * 2;
+            starField->pos[index].y = (RandomF32() - 0.5f) * 2;
+            starField->pos[index].z = (RandomF32() - 0.5f) * 2;
+        }
+        else
+        {
+            Win32DrawPixel(buffer, screenX, screenY, 0xFF, 0xFF, 0xFF);
+        }
+    }
+
+}
+
 INT WINAPI 
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
@@ -96,6 +137,10 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
                                   WINDOW_WIDTH, WINDOW_HEIGHT,
                                   0, 0, hInstance, 0);
     globalRunning = true;
+
+    StarField starField;
+    StarFieldInit(&starField);
+
     while(globalRunning)
     {
         MSG message;
@@ -107,7 +152,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         
         Win32ClearBackBuffer(&globalBackBuffer, 0x22, 0x22, 0x22);
 
-        Win32DrawPixel(&globalBackBuffer, 0, 0, 0xff, 0x00, 0x00);
+        StarFieldUpdateAndRender(&globalBackBuffer, 0.0005f, &starField);
 
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
     }

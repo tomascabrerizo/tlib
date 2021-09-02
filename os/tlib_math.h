@@ -3,7 +3,15 @@
 
 #include "tlib_types.h"
 
+#include <stdlib.h>
 #include <math.h>
+
+// NOTE: Random numbers
+inline F32 RandomF32()
+{
+    F32 result = (F32)rand()/RAND_MAX;
+    return result;
+}
 
 // NOTE: Common math funtions
 
