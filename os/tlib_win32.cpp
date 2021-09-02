@@ -1,4 +1,5 @@
 #include "tlib_types.h"
+#include "tlib_math.h"
 #include "tlib_win32.h"
 
 #define WINDOW_WIDTH 800
@@ -43,6 +44,13 @@ void Win32ClearBackBuffer(Win32BackBuffer *buffer, U8 red, U8 green, U8 blue)
     {
         buffer->pixels[index] = color;
     }
+}
+
+void Win32DrawPixel(Win32BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue)
+{
+    // TODO: Do pixel bounds check
+    U32 color = ((U32)red << 16)|((U32)green << 8)|((U32)blue << 0);
+    buffer->pixels[y * buffer->widht + x] = color;
 }
 
 LRESULT CALLBACK 
@@ -98,6 +106,9 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         }
         
         Win32ClearBackBuffer(&globalBackBuffer, 0x22, 0x22, 0x22);
+
+        Win32DrawPixel(&globalBackBuffer, 0, 0, 0xff, 0x00, 0x00);
+
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
     }
     
