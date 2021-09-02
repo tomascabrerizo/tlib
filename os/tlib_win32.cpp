@@ -80,12 +80,17 @@ Win32WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 
 void StarFieldInit(StarField *starField)
 {
-    // NOTE: The coordinates are normallize to -1 to 1
     for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
     {
+        // NOTE: The coordinates are normallize to -1 to 1
         starField->pos[index].x = (RandomF32() - 0.5f) * 2;
         starField->pos[index].y = (RandomF32() - 0.5f) * 2;
         starField->pos[index].z = (RandomF32() - 0.5f) * 2;
+        
+        // NOTE: Color are from 0 to 1 
+        starField->color[index].x = RandomF32();
+        starField->color[index].y = RandomF32();
+        starField->color[index].z = RandomF32();
     }
 }
 
@@ -99,11 +104,12 @@ void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starFi
         // NOTE: Update Star
         starField->pos[index].z -= dt;
 
-        // NOTE: Render star
+        // NOTE: Project Star into screen space
         F32 z = starField->pos[index].z;
         I32 screenX = (starField->pos[index].x/z * halfBufferWidht) + halfBufferWidht;
         I32 screenY = (starField->pos[index].y/z * halfBufferHeight) + halfBufferHeight;
         
+        // NOTE: Render Star
         if(screenX < 0 || screenX >= buffer->width || 
            screenY < 0 || screenY >= buffer->height ||
            starField->pos[index].z <= 0)
@@ -114,7 +120,11 @@ void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starFi
         }
         else
         {
-            Win32DrawPixel(buffer, screenX, screenY, 0xFF, 0xFF, 0xFF);
+            // NOTE: Map color from 0 to 1 to 127 to 255
+            U8 red =   (U8)(starField->color[index].x * 127 + 128);
+            U8 green = (U8)(starField->color[index].y * 127 + 128);
+            U8 blue =  (U8)(starField->color[index].z * 127 + 128);
+            Win32DrawPixel(buffer, screenX, screenY, red, green, blue); 
         }
     }
 
@@ -150,7 +160,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
             DispatchMessageA(&message); 
         }
         
-        Win32ClearBackBuffer(&globalBackBuffer, 0x22, 0x22, 0x22);
+        Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
 
         StarFieldUpdateAndRender(&globalBackBuffer, 0.0005f, &starField);
 
