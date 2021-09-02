@@ -16,12 +16,12 @@ typedef float F32;
 typedef uint8_t B8;
 typedef uint32_t B32;
 
-#define align_64(value) (((value) + 0x7) & ~0x7)
-#define align_32(value) (((value) + 0x3) & ~0x3)
+#define Align64(value) (((value) + 0x7) & ~0x7)
+#define Align32(value) (((value) + 0x3) & ~0x3)
 
-#define array_count(array) (sizeof(array)/sizeof(array[0]))
+#define ArrayCount(array) (sizeof(array)/sizeof(array[0]))
 
-inline I32 ceil_f32i32(F32 value)
+inline I32 CeilF32I32(F32 value)
 {
     I32 result = ceilf(value);
     return result;

@@ -57,7 +57,6 @@ Gradients new_gradients(Point3D *vertices)
 // NOTE: Edge constructor
 Edge new_edge(Gradients *gradients, Point3D *vertices, I32 top, I32 bottom)
 {
-    // TODO: Study how this really work
     Edge result = {};
     
     result.y = ceil_f32i32(vertices[top].y);
@@ -101,7 +100,6 @@ I32 edge_step(Edge *edge)
      edge->one_z += edge->one_z_step;
      return edge->height;
 }
-
 
 void texture_map_triangle(U32 *buffer, U32 buffer_width, U32 buffer_height,
                           U32 *texture, U32 texture_width, U32 texture_height, 
