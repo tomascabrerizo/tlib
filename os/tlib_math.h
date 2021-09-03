@@ -343,7 +343,7 @@ inline M4F32 RotateZM4F32(F32 angle)
 
 M4F32 PerspectiveM4F32(F32 fov, F32 aspect, F32 near, F32 far)
 {
-    F32 tanHalfFov = TanF32(ToRadians(fov)*0.5f);
+    F32 tanHalfFov = TanF32(ToRadians(fov*0.5f));
     F32 range = (far - near);
     M4F32 result = {};
     result.m[0][0] = 1.0f / (aspect*tanHalfFov);
@@ -354,7 +354,7 @@ M4F32 PerspectiveM4F32(F32 fov, F32 aspect, F32 near, F32 far)
     return result;
 }
 
-V4F32 MultM4F32V2F32(M4F32 matrix, V4F32 v)
+V4F32 MultM4F32V4F32(M4F32 matrix, V4F32 v)
 {
     V4F32 result = {};
     result.x = ((matrix.m[0][0] * v.x) + (matrix.m[0][1] * v.y) + 

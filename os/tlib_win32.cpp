@@ -195,20 +195,21 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
 
         // NOTE: Rotate vertices in Y
         static F32 angle = 0.0f;
-        v0 = MultM4F32V2F32(RotateYM4F32(angle), v0);
-        v1 = MultM4F32V2F32(RotateYM4F32(angle), v1);
-        v2 = MultM4F32V2F32(RotateYM4F32(angle), v2);
+        v0 = MultM4F32V4F32(RotateYM4F32(angle), v0);
+        v1 = MultM4F32V4F32(RotateYM4F32(angle), v1);
+        v2 = MultM4F32V4F32(RotateYM4F32(angle), v2);
         angle += 100 * dt;
+        if(angle > 360) angle = 0;
         
         // NOTE: Translate vertices in Z
-        v0 = MultM4F32V2F32(TranslateM4F32(_V3F32(0, 0, 2)), v0);
-        v1 = MultM4F32V2F32(TranslateM4F32(_V3F32(0, 0, 2)), v1);
-        v2 = MultM4F32V2F32(TranslateM4F32(_V3F32(0, 0, 2)), v2);
+        v0 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v0);
+        v1 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v1);
+        v2 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v2);
 
         // NOTE: Project vertices
-        v0 = MultM4F32V2F32(projection, v0);
-        v1 = MultM4F32V2F32(projection, v1);
-        v2 = MultM4F32V2F32(projection, v2);
+        v0 = MultM4F32V4F32(projection, v0);
+        v1 = MultM4F32V4F32(projection, v1);
+        v2 = MultM4F32V4F32(projection, v2);
 
         // NOTE: Perspective divide ans scale to get the screen coordinates
         V2F32 v0Screen = _V2F32(v0.x, v0.y);
