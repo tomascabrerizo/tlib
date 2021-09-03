@@ -4,7 +4,7 @@
 
 #include "tlib_render.cpp"
 
-#define WINDOW_WIDTH 800
+#define WINDOW_WIDTH 800 
 #define WINDOW_HEIGHT 600
 
 // NOTE: Globals variables
@@ -166,7 +166,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
 
     F32 dt = 0.0005f;
     
-    F32 aspect = backBuffer.width / backBuffer.height;
+    F32 aspect = (F32)backBuffer.width / (F32)backBuffer.height;
     I32 halfWidth = 0.5f*backBuffer.width;
     I32 halfHeight = 0.5f*backBuffer.height;
     M4F32 projection = PerspectiveM4F32(60, aspect, 0, 100);
