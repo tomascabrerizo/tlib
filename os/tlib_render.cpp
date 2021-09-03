@@ -14,8 +14,11 @@ Edge _Edge(V2F32 start, V2F32 end)
     
     F32 yDist = (end.y - start.y); 
     F32 xDist = (end.x - start.x); 
+    
+    F32 yPreStep = result.startY - start.y;
+
     result.xStep = xDist / yDist;
-    result.x = start.x;
+    result.x = start.x + yPreStep * result.xStep;
 
     return result;
 }

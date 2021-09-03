@@ -15,6 +15,32 @@ inline F32 RandomF32()
 
 // NOTE: Common math funtions
 
+#define NUM_PI 3.14159265359
+
+inline F32 ToRadians(F32 angle)
+{
+    F32 result = (angle * NUM_PI) / 180.0f;
+    return result;
+}
+
+inline F32 CosF32(F32 angle)
+{
+    F32 result = cosf(angle);
+    return angle;
+}
+
+inline F32 SinF32(F32 angle)
+{
+    F32 result = sinf(angle);
+    return angle;
+}
+
+inline F32 TanF32(F32 angle)
+{
+    F32 result = tanf(angle);
+    return angle;
+}
+
 inline I32 CeilF32I32(F32 value)
 {
     I32 result = ceilf(value);
@@ -27,7 +53,7 @@ inline F32 SquareRootF32(F32 value)
     return result;
 }
 
-// NOTE: Math structs
+// NOTE: Vectors structs
 
 struct V2F32
 {
@@ -223,5 +249,120 @@ inline F32 LenghtV4F32(V4F32 a)
     return result;
 }
 
+// NOTE: Matrix structs
+
+struct M4F32
+{
+    F32 m[4][4];
+};
+
+// NOTE: Matrix functions 
+
+inline M4F32 MultM4F32(M4F32 a, M4F32 b)
+{
+    M4F32 result = {};
+    for(I32 j = 0; j < 4; ++j)
+    {
+        for(I32 i = 0; i < 4; ++i)
+        {
+            result.m[j][i] = a.m[j][0] * b.m[0][i] +
+                             a.m[j][1] * b.m[1][i] +
+                             a.m[j][2] * b.m[2][i] +
+                             a.m[j][3] * b.m[3][i];
+        }
+    }
+    return result;
+}
+
+inline M4F32 IdentityM4F32()
+{
+    M4F32 result = {};
+    result.m[0][0] = 1.0f;
+    result.m[1][1] = 1.0f;
+    result.m[2][2] = 1.0f;
+    result.m[3][3] = 1.0f;
+    return result;
+}
+
+inline M4F32 ScaleM4F32(F32 scale)
+{
+    M4F32 result = IdentityM4F32();
+    result.m[0][0] = scale;
+    result.m[1][1] = scale;
+    result.m[2][2] = scale;
+    return result;
+}
+
+inline M4F32 TranslateM4F32(V3F32 translate)
+{
+    M4F32 result = IdentityM4F32();
+    result.m[0][3] = translate.x;
+    result.m[1][3] = translate.y;
+    result.m[2][3] = translate.z;
+    return result;
+}
+
+inline M4F32 RotateXM4F32(F32 angle)
+{
+    float radAngle = ToRadians(angle);
+    M4F32 result = IdentityM4F32();
+    result.m[1][1] =  CosF32(radAngle);
+    result.m[1][2] = -SinF32(radAngle);
+    result.m[2][1] =  SinF32(radAngle);
+    result.m[2][2] =  CosF32(radAngle);
+    return result;
+}
+
+inline M4F32 RotateYM4F32(F32 angle)
+{
+    float radAngle = ToRadians(angle);
+    M4F32 result = IdentityM4F32();
+    result.m[0][0] =  CosF32(radAngle);
+    result.m[0][2] =  SinF32(radAngle);
+    result.m[2][0] = -SinF32(radAngle);
+    result.m[2][2] =  CosF32(radAngle);
+    return result;
+}
+
+inline M4F32 RotateZM4F32(F32 angle)
+{
+    float radAngle = ToRadians(angle);
+    M4F32 result = IdentityM4F32();
+    result.m[0][0] =  CosF32(radAngle);
+    result.m[0][1] = -SinF32(radAngle);
+    result.m[1][0] =  SinF32(radAngle);
+    result.m[1][1] =  CosF32(radAngle);
+    return result;
+}
+
+M4F32 PerspectiveM4F32(F32 fov, F32 aspect, F32 near, F32 far)
+{
+    F32 tanHalfFov = TanF32(ToRadians(fov)*0.5f);
+    F32 range = (far - near);
+    M4F32 result = {};
+    result.m[0][0] = 1.0f / (aspect*tanHalfFov);
+    result.m[1][1] = 1.0f / tanHalfFov;
+    result.m[2][2] = far / range;
+    result.m[2][3] = (-far*near) / range;
+    result.m[3][2] = 1.0f;
+    return result;
+}
+
+V4F32 M4F32MultV2F32(M4F32 matrix, V4F32 v)
+{
+    V4F32 result = {};
+    result.x = ((matrix.m[0][0] * v.x) + (matrix.m[0][1] * v.y) + 
+                (matrix.m[0][2] * v.z) + (matrix.m[0][3] * v.w));
+    
+    result.y = ((matrix.m[1][0] * v.x) + (matrix.m[1][1] * v.y) + 
+                (matrix.m[1][2] * v.z) + (matrix.m[1][3] * v.w));
+    
+    result.z = ((matrix.m[2][0] * v.x) + (matrix.m[2][1] * v.y) + 
+                (matrix.m[2][2] * v.z) + (matrix.m[2][3] * v.w));
+    
+    result.w = ((matrix.m[3][0] * v.x) + (matrix.m[3][1] * v.y) + 
+                (matrix.m[3][2] * v.z) + (matrix.m[3][3] * v.w));
+    return result;
+}
 
 #endif // TLIB_MATH_H
