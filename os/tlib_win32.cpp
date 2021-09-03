@@ -2,6 +2,8 @@
 #include "tlib_math.h"
 #include "tlib_win32.h"
 
+#include "tlib_render.cpp"
+
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
@@ -49,7 +51,7 @@ void Win32ClearBackBuffer(Win32BackBuffer *buffer, U8 red, U8 green, U8 blue)
 void Win32DrawPixel(Win32BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue)
 {
     U32 color = ((U32)red << 16)|((U32)green << 8)|((U32)blue << 0);
-    buffer->pixels[y * buffer->width+ x] = color;
+    buffer->pixels[y * buffer->width + x] = color;
 }
 
 LRESULT CALLBACK 
@@ -153,6 +155,13 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
                                   CW_USEDEFAULT, CW_USEDEFAULT,
                                   WINDOW_WIDTH, WINDOW_HEIGHT,
                                   0, 0, hInstance, 0);
+
+    // NOTE: Pass the backbuffer into the game
+    BackBuffer backBuffer = {};
+    backBuffer.pixels = globalBackBuffer.pixels;
+    backBuffer.width = globalBackBuffer.width;
+    backBuffer.height = globalBackBuffer.height;
+    
     globalRunning = true;
 
     StarField starField;
@@ -170,6 +179,12 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
 
         StarFieldUpdateAndRender(&globalBackBuffer, 0.0005f, &starField);
+
+
+        V2F32 v0 = _V2F32(500, 100);
+        V2F32 v1 = _V2F32(200, 250);
+        V2F32 v2 = _V2F32(400, 400);
+        FillTriangle(&backBuffer, v1, v2, v0);
 
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
     }
