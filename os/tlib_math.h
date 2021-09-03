@@ -26,19 +26,19 @@ inline F32 ToRadians(F32 angle)
 inline F32 CosF32(F32 angle)
 {
     F32 result = cosf(angle);
-    return angle;
+    return result;
 }
 
 inline F32 SinF32(F32 angle)
 {
     F32 result = sinf(angle);
-    return angle;
+    return result;
 }
 
 inline F32 TanF32(F32 angle)
 {
     F32 result = tanf(angle);
-    return angle;
+    return result;
 }
 
 inline I32 CeilF32I32(F32 value)
@@ -304,34 +304,40 @@ inline M4F32 TranslateM4F32(V3F32 translate)
 
 inline M4F32 RotateXM4F32(F32 angle)
 {
-    float radAngle = ToRadians(angle);
     M4F32 result = IdentityM4F32();
-    result.m[1][1] =  CosF32(radAngle);
-    result.m[1][2] = -SinF32(radAngle);
-    result.m[2][1] =  SinF32(radAngle);
-    result.m[2][2] =  CosF32(radAngle);
+    F32 radAngle = ToRadians(angle);
+    F32 sinOfA = SinF32(radAngle);
+    F32 cosOfA = CosF32(radAngle);
+    result.m[1][1] =  cosOfA;
+    result.m[1][2] = -sinOfA;
+    result.m[2][1] =  sinOfA;
+    result.m[2][2] =  cosOfA;
     return result;
 }
 
 inline M4F32 RotateYM4F32(F32 angle)
 {
-    float radAngle = ToRadians(angle);
     M4F32 result = IdentityM4F32();
-    result.m[0][0] =  CosF32(radAngle);
-    result.m[0][2] =  SinF32(radAngle);
-    result.m[2][0] = -SinF32(radAngle);
-    result.m[2][2] =  CosF32(radAngle);
+    F32 radAngle = ToRadians(angle);
+    F32 sinOfA = SinF32(radAngle);
+    F32 cosOfA = CosF32(radAngle);
+    result.m[0][0] =  cosOfA;
+    result.m[0][2] =  sinOfA;
+    result.m[2][0] = -sinOfA;
+    result.m[2][2] =  cosOfA;
     return result;
 }
 
 inline M4F32 RotateZM4F32(F32 angle)
 {
-    float radAngle = ToRadians(angle);
     M4F32 result = IdentityM4F32();
-    result.m[0][0] =  CosF32(radAngle);
-    result.m[0][1] = -SinF32(radAngle);
-    result.m[1][0] =  SinF32(radAngle);
-    result.m[1][1] =  CosF32(radAngle);
+    F32 radAngle = ToRadians(angle);
+    F32 sinOfA = SinF32(radAngle);
+    F32 cosOfA = CosF32(radAngle);
+    result.m[0][0] =  cosOfA;
+    result.m[0][1] = -sinOfA;
+    result.m[1][0] =  sinOfA;
+    result.m[1][1] =  cosOfA;
     return result;
 }
 
@@ -348,7 +354,7 @@ M4F32 PerspectiveM4F32(F32 fov, F32 aspect, F32 near, F32 far)
     return result;
 }
 
-V4F32 M4F32MultV2F32(M4F32 matrix, V4F32 v)
+V4F32 MultM4F32V2F32(M4F32 matrix, V4F32 v)
 {
     V4F32 result = {};
     result.x = ((matrix.m[0][0] * v.x) + (matrix.m[0][1] * v.y) + 
