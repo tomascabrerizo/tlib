@@ -113,3 +113,19 @@ void FillTriangle(BackBuffer *buffer, V2F32 v0, V2F32 v1, V2F32 v2)
     B8 handness = (areaTimeTwo >= 0) ? 1 : 0;
     ScanTriangle(buffer, minVert, midVert, maxVert, handness);
 }
+
+V2F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
+{
+    I32 halfWidth = 0.5f*buffer->width;
+    I32 halfHeight = 0.5f*buffer->height;
+    V2F32 result = _V2F32(v.x, v.y);
+    if(v.w != 0)
+    {
+        result.x /= v.w;
+        result.y /= v.w;
+    }
+    result.x = (result.x*halfWidth) + halfWidth;
+    result.y = (result.y*halfHeight) + halfHeight;
+
+    return result;
+}

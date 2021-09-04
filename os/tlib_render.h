@@ -30,4 +30,7 @@ void ScanTriangle(BackBuffer *buffer, V2F32 minVert, V2F32 midVert, V2F32 maxVer
 
 void FillTriangle(BackBuffer *buffer, V2F32 v0, V2F32 v1, V2F32 v2);
 
+// TODO: Maybe this will be better in tlib_math.h
+V2F32 ToScreenSpace(BackBuffer *buffer, V4F32 v);
+
 #endif //TLIB_RENDER_H

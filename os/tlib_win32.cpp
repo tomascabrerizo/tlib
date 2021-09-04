@@ -1,8 +1,9 @@
+#include "tlib_main.cpp"
+#include "tlib_render.cpp"
+
 #include "tlib_types.h"
 #include "tlib_math.h"
 #include "tlib_win32.h"
-
-#include "tlib_render.cpp"
 
 #define WINDOW_WIDTH 800 
 #define WINDOW_HEIGHT 600
@@ -11,6 +12,10 @@
 static B8 globalRunning;
 static Win32BackBuffer globalBackBuffer;
 static HDC globalWindowDC;
+
+// NOTE: Functions to the client
+void GameInit(BackBuffer *backBuffer);
+void GameUpdateAndRender(BackBuffer *backBuffer, F32 dt);
 
 void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buffer)
 {
@@ -79,6 +84,8 @@ Win32WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return result;
 }
+
+// TODO: Remove star field from the platfom layer
 
 void StarFieldInit(StarField *starField)
 {
@@ -162,20 +169,26 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
     backBuffer.width = globalBackBuffer.width;
     backBuffer.height = globalBackBuffer.height;
     
-    globalRunning = true;
-
-    F32 dt = 0.0005f;
-    
-    F32 aspect = (F32)backBuffer.width / (F32)backBuffer.height;
-    I32 halfWidth = 0.5f*backBuffer.width;
-    I32 halfHeight = 0.5f*backBuffer.height;
-    M4F32 projection = PerspectiveM4F32(60, aspect, 0, 100);
-
     StarField starField;
     StarFieldInit(&starField);
+    GameInit(&backBuffer);
+   
+    globalRunning = true;
+
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    LARGE_INTEGER lastTime;
+    QueryPerformanceCounter(&lastTime);
 
     while(globalRunning)
     {
+        LARGE_INTEGER currentTime;
+        QueryPerformanceCounter(&currentTime);
+        
+        I64 deltaTime = currentTime.QuadPart - lastTime.QuadPart;
+        F32 dt = ((F32)deltaTime / (F32)frequency.QuadPart);
+        lastTime = currentTime;
+
         MSG message;
         while(PeekMessageA(&message, window, 0, 0, PM_REMOVE))
         {
@@ -186,60 +199,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
 
         StarFieldUpdateAndRender(&globalBackBuffer, dt, &starField);
-
-        // NOTE: 3D complete transform from local space to screen space
-
-        V4F32 v0 = _V4F32( 0.0f, -0.5f, 0.0f, 1.0f);
-        V4F32 v1 = _V4F32( 0.5f,  0.5f, 0.0f, 1.0f);
-        V4F32 v2 = _V4F32(-0.5f,  0.5f, 0.0f, 1.0f);
-
-        // NOTE: Rotate vertices in Y
-        static F32 angle = 0.0f;
-        v0 = MultM4F32V4F32(RotateYM4F32(angle), v0);
-        v1 = MultM4F32V4F32(RotateYM4F32(angle), v1);
-        v2 = MultM4F32V4F32(RotateYM4F32(angle), v2);
-        angle += 100 * dt;
-        if(angle > 360) angle = 0;
-        
-        // NOTE: Translate vertices in Z
-        v0 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v0);
-        v1 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v1);
-        v2 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v2);
-
-        // NOTE: Project vertices
-        v0 = MultM4F32V4F32(projection, v0);
-        v1 = MultM4F32V4F32(projection, v1);
-        v2 = MultM4F32V4F32(projection, v2);
-
-        // NOTE: Perspective divide ans scale to get the screen coordinates
-        V2F32 v0Screen = _V2F32(v0.x, v0.y);
-        if(v0.w != 0)
-        {
-            v0Screen.x /= v0.w;
-            v0Screen.y /= v0.w;
-        }
-        v0Screen.x = (v0Screen.x*halfWidth) + halfWidth;
-        v0Screen.y = (v0Screen.y*halfHeight) + halfHeight;
-        
-        V2F32 v1Screen = _V2F32(v1.x, v1.y);
-        if(v1.w != 0)
-        {
-            v1Screen.x /= v1.w;
-            v1Screen.y /= v1.w;
-        }
-        v1Screen.x = (v1Screen.x*halfWidth) + halfWidth;
-        v1Screen.y = (v1Screen.y*halfHeight) + halfHeight;
-
-        V2F32 v2Screen = _V2F32(v2.x, v2.y);
-        if(v2.w != 0)
-        {
-            v2Screen.x /= v2.w;
-            v2Screen.y /= v2.w;
-        }
-        v2Screen.x = (v2Screen.x*halfWidth) + halfWidth;
-        v2Screen.y = (v2Screen.y*halfHeight) + halfHeight;
-
-        FillTriangle(&backBuffer, v0Screen, v1Screen, v2Screen);
+        GameUpdateAndRender(&backBuffer, dt);
 
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
     }
