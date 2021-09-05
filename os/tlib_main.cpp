@@ -14,9 +14,14 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
 {
     // NOTE: 3D complete transform from local space to screen space
 
+    // TODO: Create a vertex class
     V4F32 v0 = _V4F32( 0.0f, -0.5f, 0.0f, 1.0f);
     V4F32 v1 = _V4F32( 0.5f,  0.5f, 0.0f, 1.0f);
     V4F32 v2 = _V4F32(-0.5f,  0.5f, 0.0f, 1.0f);
+    
+    V4F32 c0 = _V4F32(1.0f, 0.0f, 1.0f, 1.0f);
+    V4F32 c1 = _V4F32(1.0f, 1.0f, 0.0f, 1.0f);
+    V4F32 c2 = _V4F32(0.0f, 1.0f, 1.0f, 1.0f);
 
     // NOTE: Rotate vertices in Y
     static F32 angle = 0.0f;
@@ -36,7 +41,5 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
     v1 = MultM4F32V4F32(projection, v1);
     v2 = MultM4F32V4F32(projection, v2);
 
-    FillTriangle(buffer, ToScreenSpace(buffer, v0),
-                         ToScreenSpace(buffer, v1), 
-                         ToScreenSpace(buffer, v2));
+    FillTriangle(buffer, v0, v1, v2, c0, c1, c2);
 }

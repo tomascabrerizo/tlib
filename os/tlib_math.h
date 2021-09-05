@@ -53,6 +53,12 @@ inline F32 SquareRootF32(F32 value)
     return result;
 }
 
+inline F32 Lerp(F32 a, F32 b, F32 t)
+{
+    F32 result = (a + (b - a)*t);
+    return result;
+}
+
 // NOTE: Vectors structs
 
 struct V2F32
@@ -246,6 +252,27 @@ inline F32 LenghtSqrtV4F32(V4F32 a)
 inline F32 LenghtV4F32(V4F32 a)
 {
     F32 result = SquareRootF32(LenghtSqrtV4F32(a));
+    return result;
+}
+
+
+// NOTE: Vector Lerp functions
+
+inline V2F32 LerpV2F32(V2F32 a, V2F32 b, F32 t)
+{
+    V2F32 result = AddV2F32(a, ScaleV2F32(SubV2F32(b, a), t));
+    return result;
+}
+
+inline V3F32 LerpV3F32(V3F32 a, V3F32 b, F32 t)
+{
+    V3F32 result = AddV3F32(a, ScaleV3F32(SubV3F32(b, a), t));
+    return result;
+}
+
+inline V4F32 LerpV4F32(V4F32 a, V4F32 b, F32 t)
+{
+    V4F32 result = AddV4F32(a, ScaleV4F32(SubV4F32(b, a), t));
     return result;
 }
 
