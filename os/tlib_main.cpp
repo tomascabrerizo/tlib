@@ -32,7 +32,7 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
 {
     // NOTE: 3D complete transform from local space to screen space
 
-    // TODO: Create a vertex class
+    // TODO: Reverse the y component. Probably on perspective divide
     Vertex v0 = _Vertex( 0.0f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f);
     Vertex v1 = _Vertex( 0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
     Vertex v2 = _Vertex(-0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
@@ -56,7 +56,8 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
     v2.pos = MultM4F32V4F32(projection, v2.pos);
 
     FillTriangle(buffer, &randomBitmap, v0, v1, v2);
-
+    
+    // NOTE: Render random texture in (0, 0) pos
     for(U32 y = 0; y < randomBitmap.height; ++y)
     {
         for(U32 x = 0; x < randomBitmap.width; ++x)

@@ -115,22 +115,27 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
 
     V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
     V2F32 maxTexCoord = AddV2F32(right->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
-     
-    F32 lerpT = 0;
-    F32 lerpStep = 1.0f / (F32)(endX - startX);
+    
+    // TODO: Should be able to step whit only xStep (no lerp needed)
+    //F32 lerpT = 0;
+    //F32 lerpStep = 1.0f / (F32)(endX - startX);
 
     for(I32 x = startX; x < endX; ++x)
     {
-        V4F32 color = ScaleV4F32(LerpV4F32(minColor, maxColor, lerpT), 255);
+        //V4F32 color = ScaleV4F32(LerpV4F32(minColor, maxColor, lerpT), 255);
+        V4F32 color = ScaleV4F32(minColor, 255);
         DrawPixel(buffer, x, y, color.x, color.y, color.z);
+        minColor = AddV4F32(minColor, gradients->colorXStep);
 
-        V2F32 srcTexCoord = LerpV2F32(minTexCoord, maxTexCoord, lerpT);
+        //V2F32 srcTexCoord = LerpV2F32(minTexCoord, maxTexCoord, lerpT);
+        V2F32 srcTexCoord = minTexCoord;
         U32 srcX = (srcTexCoord.x * (bitmap->width  - 1) + 0.5f);
         U32 srcY = (srcTexCoord.y * (bitmap->height - 1) + 0.5f);
         
-        CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
+        //CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
+        minTexCoord = AddV2F32(minTexCoord, gradients->texCoordXStep);
 
-        lerpT += lerpStep;
+        //lerpT += lerpStep;
     }
 }
 
