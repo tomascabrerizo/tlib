@@ -15,31 +15,27 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
     // NOTE: 3D complete transform from local space to screen space
 
     // TODO: Create a vertex class
-    V4F32 v0 = _V4F32( 0.0f, -0.5f, 0.0f, 1.0f);
-    V4F32 v1 = _V4F32( 0.5f,  0.5f, 0.0f, 1.0f);
-    V4F32 v2 = _V4F32(-0.5f,  0.5f, 0.0f, 1.0f);
+    Vertex v0 = _Vertex( 0.0f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f);
+    Vertex v1 = _Vertex( 0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f);
+    Vertex v2 = _Vertex(-0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f);
     
-    V4F32 c0 = _V4F32(1.0f, 0.0f, 1.0f, 1.0f);
-    V4F32 c1 = _V4F32(1.0f, 1.0f, 0.0f, 1.0f);
-    V4F32 c2 = _V4F32(0.0f, 1.0f, 1.0f, 1.0f);
-
     // NOTE: Rotate vertices in Y
     static F32 angle = 0.0f;
-    v0 = MultM4F32V4F32(RotateYM4F32(angle), v0);
-    v1 = MultM4F32V4F32(RotateYM4F32(angle), v1);
-    v2 = MultM4F32V4F32(RotateYM4F32(angle), v2);
+    v0.pos = MultM4F32V4F32(RotateYM4F32(angle), v0.pos);
+    v1.pos = MultM4F32V4F32(RotateYM4F32(angle), v1.pos);
+    v2.pos = MultM4F32V4F32(RotateYM4F32(angle), v2.pos);
     angle += 100 * dt;
     if(angle > 360) angle = 0;
     
     // NOTE: Translate vertices in Z
-    v0 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v0);
-    v1 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v1);
-    v2 = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v2);
+    v0.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v0.pos);
+    v1.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v1.pos);
+    v2.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 2)), v2.pos);
 
     // NOTE: Project vertices
-    v0 = MultM4F32V4F32(projection, v0);
-    v1 = MultM4F32V4F32(projection, v1);
-    v2 = MultM4F32V4F32(projection, v2);
+    v0.pos = MultM4F32V4F32(projection, v0.pos);
+    v1.pos = MultM4F32V4F32(projection, v1.pos);
+    v2.pos = MultM4F32V4F32(projection, v2.pos);
 
-    FillTriangle(buffer, v0, v1, v2, c0, c1, c2);
+    FillTriangle(buffer, v0, v1, v2);
 }

@@ -255,7 +255,6 @@ inline F32 LenghtV4F32(V4F32 a)
     return result;
 }
 
-
 // NOTE: Vector Lerp functions
 
 inline V2F32 LerpV2F32(V2F32 a, V2F32 b, F32 t)

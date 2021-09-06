@@ -57,6 +57,14 @@ void StepEdge(Edge *edge)
     edge->color = AddV4F32(edge->color, edge->colorStep);
 }
 
+// NOTE: Vertex functions
+
+Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue)
+{
+    Vertex result = { _V4F32(x, y, z, 1), _V4F32(red, blue, green, 1.0f)};
+    return result;
+}
+
 // NOTE: Rasterizer functions
 
 void DrawPixel(BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue)
@@ -89,7 +97,6 @@ void ScanLine(BackBuffer *buffer, Gradients *gradients, Edge *left, Edge *right,
 void ScanTriangle(BackBuffer *buffer, V2F32 minVert, V2F32 midVert, V2F32 maxVert, B8 handness,
                   V4F32 c0, V4F32 c1, V4F32 c2)
 {
-
     Gradients gradients = _Gradients(minVert, midVert, maxVert, c0, c1, c2);
 
     Edge topToBottom = _Edge(gradients, minVert, maxVert, 0);
@@ -135,61 +142,59 @@ void ScanTriangle(BackBuffer *buffer, V2F32 minVert, V2F32 midVert, V2F32 maxVer
     }
 }
 
-void FillTriangle(BackBuffer *buffer, V4F32 v0, V4F32 v1, V4F32 v2, 
-                  V4F32 c0, V4F32 c1, V4F32 c2)
+void FillTriangle(BackBuffer *buffer, Vertex v0, Vertex v1, Vertex v2)
 {
-    V2F32 minVert = ToScreenSpace(buffer, v0);
-    V2F32 midVert = ToScreenSpace(buffer, v1);
-    V2F32 maxVert = ToScreenSpace(buffer, v2);
+    Vertex minVert = v0; 
+    Vertex midVert = v1;
+    Vertex maxVert = v2;
+    minVert.pos = ToScreenSpace(buffer, v0.pos);
+    midVert.pos = ToScreenSpace(buffer, v1.pos);
+    maxVert.pos = ToScreenSpace(buffer, v2.pos);
 
     // TODO: Create a vertex struct to not have to swap 
     // interpolants values as well
 
-    if(midVert.y < minVert.y)
+    if(midVert.pos.y < minVert.pos.y)
     {
-        V2F32 temp = midVert;
+        Vertex temp = midVert;
         midVert = minVert;
         minVert = temp;
-
-        V4F32 cTemp = c1;
-        c1 = c0;
-        c0 = cTemp;
     }
-    if(maxVert.y < midVert.y)
+    if(maxVert.pos.y < midVert.pos.y)
     {
-        V2F32 temp = midVert;
+        Vertex temp = midVert;
         midVert = maxVert;
         maxVert = temp;
-        
-        V4F32 cTemp = c1;
-        c1 = c2;
-        c2 = cTemp;
     }
-    if(midVert.y < minVert.y)
+    if(midVert.pos.y < minVert.pos.y)
     {
-        V2F32 temp = midVert;
+        Vertex temp = midVert;
         midVert = minVert;
         minVert = temp;
-
-        V4F32 cTemp = c1;
-        c1 = c0;
-        c0 = cTemp;
     }
+    
+    V2F32 screenMin = _V2F32(minVert.pos.x, minVert.pos.y);
+    V2F32 screenMid = _V2F32(midVert.pos.x, midVert.pos.y);
+    V2F32 screenMax = _V2F32(maxVert.pos.x, maxVert.pos.y);
 
-    F32 areaTimeTwo = CrossV2F32(SubV2F32(maxVert, minVert), SubV2F32(midVert, minVert));
+    F32 areaTimeTwo = CrossV2F32(SubV2F32(screenMax, screenMin), 
+                                 SubV2F32(screenMid, screenMin));
     B8 handness = (areaTimeTwo >= 0) ? 1 : 0;
-    ScanTriangle(buffer, minVert, midVert, maxVert, handness, c0, c1, c2);
+    ScanTriangle(buffer, screenMin, screenMid, screenMax, handness, 
+                 minVert.color, midVert.color, maxVert.color);
 }
 
-V2F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
+V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
 {
     I32 halfWidth = 0.5f*buffer->width;
     I32 halfHeight = 0.5f*buffer->height;
-    V2F32 result = _V2F32(v.x, v.y);
+    V4F32 result = _V4F32(v.x, v.y, v.z, v.w);
     if(v.w != 0)
     {
         result.x /= v.w;
         result.y /= v.w;
+        result.z /= v.w;
+        result.w /= v.w;
     }
     result.x = (result.x*halfWidth) + halfWidth;
     result.y = (result.y*halfHeight) + halfHeight;
