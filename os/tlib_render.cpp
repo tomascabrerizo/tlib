@@ -30,12 +30,21 @@ Gradients _Gradients(V2F32 v0, V2F32 v1, V2F32 v2,
     result.texCoord[1] = t1;
     result.texCoord[2] = t2;
 
+    //F32 uXStep = (((t1.x - t2.x) * (v0.y - v2.y)) - ((t0.x - t2.x) * (v1.y - v2.y)));
+    //F32 vXStep = (((t1.y - t2.y) * (v0.y - v2.y)) - ((t0.y - t2.y) * (v1.y - v2.y)));
+
+    //F32 uYStep = (((t1.x - t2.x) * (v0.x - v2.x)) - ((t0.x - t2.x) * (v1.x - v2.x)));
+    //F32 vYStep = (((t1.y - t2.y) * (v0.x - v2.x)) - ((t0.y - t2.y) * (v1.x - v2.x)));
+    
+    //result.texCoordXStep = _V2F32(uXStep * oneOverDX, vXStep * oneOverDX);
+    //result.texCoordYStep = _V2F32(uYStep * oneOverDY, vYStep * oneOverDY);
+    
     V2F32 dtexCoordX = SubV2F32(ScaleV2F32(SubV2F32(t1, t2), (v0.y - v2.y)), 
                                 ScaleV2F32(SubV2F32(t0, t2), (v1.y - v2.y)));
 
     V2F32 dtexCoordY = SubV2F32(ScaleV2F32(SubV2F32(t1, t2), (v0.x - v2.x)), 
                                 ScaleV2F32(SubV2F32(t0, t2), (v1.x - v2.x)));
-
+    
     result.texCoordXStep = ScaleV2F32(dtexCoordX, oneOverDX);
     result.texCoordYStep = ScaleV2F32(dtexCoordY, oneOverDY);
 
@@ -113,32 +122,22 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
     V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
     V4F32 maxColor = AddV4F32(right->color, ScaleV4F32(gradients->colorXStep, xPreStep));
     
-    // TODO: Need to take care of xPreStep but this code have a bug
-    //V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
-    //V2F32 maxTexCoord = AddV2F32(right->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
-    V2F32 minTexCoord = left->texCoord;
-    V2F32 maxTexCoord = right->texCoord;
-    
-    // TODO: Should be able to step whit only xStep (no lerp needed)
-    //F32 lerpT = 0;
-    //F32 lerpStep = 1.0f / (F32)(endX - startX);
-
+    V2F32 minTexCoord = AddV2F32(left->texCoord, _V2F32(gradients->texCoordXStep.x * xPreStep, 
+                                                        gradients->texCoordYStep.x * xPreStep));
+    V2F32 maxTexCoord = AddV2F32(right->texCoord, _V2F32(gradients->texCoordXStep.x * xPreStep, 
+                                                        gradients->texCoordYStep.x * xPreStep));
     for(I32 x = startX; x < endX; ++x)
     {
-        //V4F32 color = ScaleV4F32(LerpV4F32(minColor, maxColor, lerpT), 255);
         V4F32 color = ScaleV4F32(minColor, 255);
         DrawPixel(buffer, x, y, color.x, color.y, color.z);
         minColor = AddV4F32(minColor, gradients->colorXStep);
 
-        //V2F32 srcTexCoord = LerpV2F32(minTexCoord, maxTexCoord, lerpT);
         V2F32 srcTexCoord = minTexCoord;
         U32 srcX = (U32)(srcTexCoord.x * (bitmap->width  - 1) + 0.5f);
         U32 srcY = (U32)(srcTexCoord.y * (bitmap->height - 1) + 0.5f);
         
         CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
         minTexCoord = AddV2F32(minTexCoord, gradients->texCoordXStep);
-
-        //lerpT += lerpStep;
     }
 }
 
