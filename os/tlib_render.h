@@ -38,11 +38,13 @@ struct Gradients
     V2F32 texCoord[3];
     V2F32 texCoordXStep;
     V2F32 texCoordYStep;
+
+    F32 oneOverZ[3];
+    F32 oneOverZXStep;
+    F32 oneOverZYStep;
 };
 
-Gradients _Gradients(V2F32 v0, V2F32 v1, V2F32 v2, 
-                     V4F32 c0, V4F32 c1, V4F32 c2,
-                     V2F32 t0, V2F32 t1, V2F32 t2);
+Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2);
 
 struct Edge
 {
@@ -58,9 +60,12 @@ struct Edge
     // NOTE Edge texCoord
     V2F32 texCoord;
     V2F32 texCoordStep;
+
+    F32 oneOverZ;
+    F32 oneOverZStep;
 };
 
-Edge _Edge(Gradients gradients, V2F32 start, V2F32 end, U32 minIndexY);
+Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY);
 void StepEdge(Edge *edge);
 
 void DrawPixel(BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue);
@@ -70,8 +75,7 @@ V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v);
 
 void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *left, Edge *right, I32 y);
 void ScanTriangle(BackBuffer *buffer, Bitmap *bitmap,
-                  V2F32 minVert, V2F32 midVert, V2F32 maxVert, B8 handness,
-                  V4F32 c0, V4F32 c1, V4F32 c2, V2F32 t0, V2F32 t1, V2F32 t2);
+                  Vertex minVert, Vertex midVert, Vertex maxVert, B8 handness);
 
 void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2);
 

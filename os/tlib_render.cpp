@@ -1,49 +1,61 @@
 #include "tlib_render.h"
 
+// NOTE: Vertex functions
+
+Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v)
+{
+    Vertex result = { _V4F32(x, y, z, 1.0f), _V4F32(red, blue, green, 1.0f), _V2F32(u, v)};
+    return result;
+}
+
 // NOTE: Gradients functions
 
-Gradients _Gradients(V2F32 v0, V2F32 v1, V2F32 v2, 
-                     V4F32 c0, V4F32 c1, V4F32 c2,
-                     V2F32 t0, V2F32 t1, V2F32 t2)
+Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
 {
     Gradients result = {};
     
-    F32 oneOverDX = 1.0f / ((v1.x - v2.x)*(v0.y - v2.y) - (v0.x - v2.x)*(v1.y - v2.y));
+    F32 oneOverDX = 1.0f / ((v1.pos.x - v2.pos.x)*(v0.pos.y - v2.pos.y) -
+                            (v0.pos.x - v2.pos.x)*(v1.pos.y - v2.pos.y));
     F32 oneOverDY = -oneOverDX;
+   
+    // NOTE: Init One over Z
+    result.oneOverZ[0] = 1.0f / v0.pos.w;
+    result.oneOverZ[1] = 1.0f / v1.pos.w;
+    result.oneOverZ[2] = 1.0f / v2.pos.w;
     
+    F32 dOneOverZX = ((result.oneOverZ[1] - result.oneOverZ[2])*(v0.pos.y - v2.pos.y) -
+                      (result.oneOverZ[0] - result.oneOverZ[2])*(v1.pos.y - v2.pos.y));
+
+    F32 dOneOverZY = ((result.oneOverZ[1] - result.oneOverZ[2])*(v0.pos.x - v2.pos.x) -
+                      (result.oneOverZ[0] - result.oneOverZ[2])*(v1.pos.x - v2.pos.x));
+    
+    result.oneOverZXStep = dOneOverZX * oneOverDX;
+    result.oneOverZYStep = dOneOverZY * oneOverDY;
+
     // NOTE: Init gradient color
-    result.color[0] = c0;
-    result.color[1] = c1;
-    result.color[2] = c2;
+    result.color[0] = ScaleV4F32(v0.color, result.oneOverZ[0]);
+    result.color[1] = ScaleV4F32(v1.color, result.oneOverZ[1]);
+    result.color[2] = ScaleV4F32(v2.color, result.oneOverZ[2]);
 
-    V4F32 dColorX = SubV4F32(ScaleV4F32(SubV4F32(c1, c2), (v0.y - v2.y)), 
-                             ScaleV4F32(SubV4F32(c0, c2), (v1.y - v2.y)));
+    V4F32 dColorX = SubV4F32(ScaleV4F32(SubV4F32(result.color[1], result.color[2]), (v0.pos.y - v2.pos.y)), 
+                             ScaleV4F32(SubV4F32(result.color[0], result.color[2]), (v1.pos.y - v2.pos.y)));
 
-    V4F32 dColorY = SubV4F32(ScaleV4F32(SubV4F32(c1, c2), (v0.x - v2.x)), 
-                             ScaleV4F32(SubV4F32(c0, c2), (v1.x - v2.x)));
+    V4F32 dColorY = SubV4F32(ScaleV4F32(SubV4F32(result.color[0], result.color[2]), (v0.pos.x - v2.pos.x)), 
+                             ScaleV4F32(SubV4F32(result.color[1], result.color[2]), (v1.pos.x - v2.pos.x)));
 
     result.colorXStep = ScaleV4F32(dColorX, oneOverDX);
     result.colorYStep = ScaleV4F32(dColorY, oneOverDY);
-    
+   
     // NOTE: Init gradient texCoord 
-    result.texCoord[0] = t0;
-    result.texCoord[1] = t1;
-    result.texCoord[2] = t2;
+    result.texCoord[0] = ScaleV2F32(v0.texCoord, result.oneOverZ[0]);
+    result.texCoord[1] = ScaleV2F32(v1.texCoord, result.oneOverZ[1]);
+    result.texCoord[2] = ScaleV2F32(v2.texCoord, result.oneOverZ[2]);
 
-    //F32 uXStep = (((t1.x - t2.x) * (v0.y - v2.y)) - ((t0.x - t2.x) * (v1.y - v2.y)));
-    //F32 vXStep = (((t1.y - t2.y) * (v0.y - v2.y)) - ((t0.y - t2.y) * (v1.y - v2.y)));
+    V2F32 dtexCoordX = SubV2F32(ScaleV2F32(SubV2F32(result.texCoord[1], result.texCoord[2]), (v0.pos.y - v2.pos.y)), 
+                                ScaleV2F32(SubV2F32(result.texCoord[0], result.texCoord[2]), (v1.pos.y - v2.pos.y)));
 
-    //F32 uYStep = (((t1.x - t2.x) * (v0.x - v2.x)) - ((t0.x - t2.x) * (v1.x - v2.x)));
-    //F32 vYStep = (((t1.y - t2.y) * (v0.x - v2.x)) - ((t0.y - t2.y) * (v1.x - v2.x)));
-    
-    //result.texCoordXStep = _V2F32(uXStep * oneOverDX, vXStep * oneOverDX);
-    //result.texCoordYStep = _V2F32(uYStep * oneOverDY, vYStep * oneOverDY);
-    
-    V2F32 dtexCoordX = SubV2F32(ScaleV2F32(SubV2F32(t1, t2), (v0.y - v2.y)), 
-                                ScaleV2F32(SubV2F32(t0, t2), (v1.y - v2.y)));
-
-    V2F32 dtexCoordY = SubV2F32(ScaleV2F32(SubV2F32(t1, t2), (v0.x - v2.x)), 
-                                ScaleV2F32(SubV2F32(t0, t2), (v1.x - v2.x)));
+    V2F32 dtexCoordY = SubV2F32(ScaleV2F32(SubV2F32(result.texCoord[1], result.texCoord[2]), (v0.pos.x - v2.pos.x)), 
+                                ScaleV2F32(SubV2F32(result.texCoord[0], result.texCoord[2]), (v1.pos.x - v2.pos.x)));
     
     result.texCoordXStep = ScaleV2F32(dtexCoordX, oneOverDX);
     result.texCoordYStep = ScaleV2F32(dtexCoordY, oneOverDY);
@@ -53,21 +65,21 @@ Gradients _Gradients(V2F32 v0, V2F32 v1, V2F32 v2,
 
 // NOTE: Edge functions
 
-Edge _Edge(Gradients gradients, V2F32 start, V2F32 end, U32 minIndexY)
+Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY)
 {
     Edge result = {};
-    result.startY = CeilF32I32(start.y);
-    result.endY = CeilF32I32(end.y);
+    result.startY = CeilF32I32(start.pos.y);
+    result.endY = CeilF32I32(end.pos.y);
     
-    F32 yDist = (end.y - start.y); 
-    F32 xDist = (end.x - start.x); 
+    F32 yDist = (end.pos.y - start.pos.y); 
+    F32 xDist = (end.pos.x - start.pos.x); 
     
-    F32 yPreStep = result.startY - start.y;
+    F32 yPreStep = result.startY - start.pos.y;
 
     result.xStep = xDist / yDist;
-    result.x = start.x + yPreStep * result.xStep;
+    result.x = start.pos.x + yPreStep * result.xStep;
     
-    F32 xPreStep = result.x - start.x;
+    F32 xPreStep = result.x - start.pos.x;
     
     // NOTE: Init edge color
     result.color = AddV4F32(AddV4F32(gradients.color[minIndexY], ScaleV4F32(gradients.colorYStep, yPreStep)),
@@ -78,6 +90,11 @@ Edge _Edge(Gradients gradients, V2F32 start, V2F32 end, U32 minIndexY)
     result.texCoord = AddV2F32(AddV2F32(gradients.texCoord[minIndexY], ScaleV2F32(gradients.texCoordYStep, yPreStep)),
                                ScaleV2F32(gradients.texCoordXStep, xPreStep));
     result.texCoordStep = AddV2F32(gradients.texCoordYStep, ScaleV2F32(gradients.texCoordXStep, result.xStep));
+    
+    // NOTE: Init oneOverZ edge
+    result.oneOverZ = gradients.oneOverZ[minIndexY] + (gradients.oneOverZYStep * yPreStep) + 
+                                                      (gradients.oneOverZXStep * xPreStep);
+    result.oneOverZStep = gradients.oneOverZYStep + (gradients.oneOverZXStep * result.xStep);
 
     return result;
 }
@@ -87,14 +104,7 @@ void StepEdge(Edge *edge)
     edge->x += edge->xStep;
     edge->color = AddV4F32(edge->color, edge->colorStep);
     edge->texCoord = AddV2F32(edge->texCoord, edge->texCoordStep);
-}
-
-// NOTE: Vertex functions
-
-Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v)
-{
-    Vertex result = { _V4F32(x, y, z, 1), _V4F32(red, blue, green, 1.0f), _V2F32(u, v)};
-    return result;
+    edge->oneOverZ += edge->oneOverZStep;
 }
 
 // NOTE: Rasterizer functions
@@ -118,35 +128,33 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
     I32 endX = CeilF32I32(right->x);
 
     F32 xPreStep = (startX - left->x);
-
-    V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
-    V4F32 maxColor = AddV4F32(right->color, ScaleV4F32(gradients->colorXStep, xPreStep));
     
-    V2F32 minTexCoord = AddV2F32(left->texCoord, _V2F32(gradients->texCoordXStep.x * xPreStep, 
-                                                        gradients->texCoordYStep.x * xPreStep));
-    V2F32 maxTexCoord = AddV2F32(right->texCoord, _V2F32(gradients->texCoordXStep.x * xPreStep, 
-                                                        gradients->texCoordYStep.x * xPreStep));
+    V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
+    V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
+    F32 minOneOverZ = left->oneOverZ + (gradients->oneOverZXStep * xPreStep);
+    
     for(I32 x = startX; x < endX; ++x)
     {
-        V4F32 color = ScaleV4F32(minColor, 255);
+        F32 z = 1.0f/minOneOverZ;
+
+        V4F32 color = ScaleV4F32(ScaleV4F32(minColor, z), 255);
         DrawPixel(buffer, x, y, color.x, color.y, color.z);
         minColor = AddV4F32(minColor, gradients->colorXStep);
 
         V2F32 srcTexCoord = minTexCoord;
-        U32 srcX = (U32)(srcTexCoord.x * (bitmap->width  - 1) + 0.5f);
-        U32 srcY = (U32)(srcTexCoord.y * (bitmap->height - 1) + 0.5f);
+        U32 srcX = (U32)(Clamp01(srcTexCoord.x*z) * (bitmap->width  - 1) + 0.5f);
+        U32 srcY = (U32)(Clamp01(srcTexCoord.y*z) * (bitmap->height - 1) + 0.5f);
         
         CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
         minTexCoord = AddV2F32(minTexCoord, gradients->texCoordXStep);
+        minOneOverZ = minOneOverZ + gradients->oneOverZXStep;
     }
 }
 
 void ScanTriangle(BackBuffer *buffer, Bitmap *bitmap,
-                  V2F32 minVert, V2F32 midVert, V2F32 maxVert, B8 handness,
-                  V4F32 c0, V4F32 c1, V4F32 c2, V2F32 t0, V2F32 t1, V2F32 t2)
+                  Vertex minVert, Vertex midVert, Vertex maxVert, B8 handness)
 {
-    Gradients gradients = _Gradients(minVert, midVert, maxVert, 
-                                     c0, c1, c2, t0, t1, t2);
+    Gradients gradients = _Gradients(minVert, midVert, maxVert);
 
     Edge topToBottom = _Edge(gradients, minVert, maxVert, 0);
     Edge topToMiddle = _Edge(gradients, minVert, midVert, 0);
@@ -203,12 +211,6 @@ void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vert
     // TODO: Create a vertex struct to not have to swap 
     // interpolants values as well
 
-    if(midVert.pos.y < minVert.pos.y)
-    {
-        Vertex temp = midVert;
-        midVert = minVert;
-        minVert = temp;
-    }
     if(maxVert.pos.y < midVert.pos.y)
     {
         Vertex temp = midVert;
@@ -221,6 +223,12 @@ void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vert
         midVert = minVert;
         minVert = temp;
     }
+    if(maxVert.pos.y < midVert.pos.y)
+    {
+        Vertex temp = midVert;
+        midVert = maxVert;
+        maxVert = temp;
+    }
     
     V2F32 screenMin = _V2F32(minVert.pos.x, minVert.pos.y);
     V2F32 screenMid = _V2F32(midVert.pos.x, midVert.pos.y);
@@ -229,25 +237,25 @@ void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vert
     F32 areaTimeTwo = CrossV2F32(SubV2F32(screenMax, screenMin), 
                                  SubV2F32(screenMid, screenMin));
     B8 handness = (areaTimeTwo >= 0) ? 1 : 0;
-    ScanTriangle(buffer, bitmap, screenMin, screenMid, screenMax, handness, 
-                 minVert.color, midVert.color, maxVert.color,
-                 minVert.texCoord, midVert.texCoord, maxVert.texCoord);
+    ScanTriangle(buffer, bitmap, minVert, midVert, maxVert, handness);
 }
 
 V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
 {
+    V4F32 result = _V4F32(v.x, v.y, v.z, v.w);
+    
     I32 halfWidth = 0.5f*buffer->width;
     I32 halfHeight = 0.5f*buffer->height;
-    V4F32 result = _V4F32(v.x, v.y, v.z, v.w);
+    
     if(v.w != 0)
     {
-        result.x /= v.w;
-        result.y /= v.w;
-        result.z /= v.w;
-        result.w /= v.w;
+        result.x /= result.w;
+        result.y /= result.w;
+        result.z /= result.w;
     }
+    
     result.x = (result.x*halfWidth) + halfWidth;
-    result.y = (result.y*halfHeight) + halfHeight;
+    result.y = (result.y*-halfHeight) + halfHeight;
 
     return result;
 }

@@ -13,7 +13,7 @@ inline F32 RandomF32()
     return result;
 }
 
-// NOTE: Common math funtions
+// NOTE: Trigonometry functions
 
 #define NUM_PI 3.14159265359
 
@@ -41,10 +41,26 @@ inline F32 TanF32(F32 angle)
     return result;
 }
 
+// NOTE: Common math funtions
+
 inline I32 CeilF32I32(F32 value)
 {
     I32 result = ceilf(value);
     return result;
+}
+
+inline F32 Clamp01(F32 num)
+{
+    if(num > 1.0f)
+    {
+        num = 1.0f;
+    }
+    if(num < 0.0f)
+    {
+        num = 0.0f;
+    }
+    return num;
+
 }
 
 inline F32 SquareRootF32(F32 value)

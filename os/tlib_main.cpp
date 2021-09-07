@@ -4,8 +4,8 @@
 
 static M4F32 projection;
 
-#define BITMAP_WIDTH 32
-#define BITMAP_HEIGHT 32
+#define BITMAP_WIDTH 64 
+#define BITMAP_HEIGHT 64 
 static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
 
@@ -33,9 +33,9 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
     // NOTE: 3D complete transform from local space to screen space
 
     // TODO: Reverse the y component. Probably on perspective divide
-    Vertex v0 = _Vertex( 0.0f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f);
-    Vertex v1 = _Vertex( 0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
-    Vertex v2 = _Vertex(-0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+    Vertex v0 = _Vertex(/*pos*/ 0.0f,  0.5f, 0.0f, /*color*/1.0f, 0.0f, 0.0f, /*uv*/0.5f, 1.0f);
+    Vertex v1 = _Vertex(/*pos*/-0.5f, -0.5f, 0.0f, /*color*/0.0f, 1.0f, 0.0f, /*uv*/1.0f, 0.0f);
+    Vertex v2 = _Vertex(/*pos*/ 0.5f, -0.5f, 0.0f, /*color*/0.0f, 0.0f, 1.0f, /*uv*/0.0f, 0.0f);
     
     // NOTE: Rotate vertices in Y
     static F32 angle = 0.0f;
