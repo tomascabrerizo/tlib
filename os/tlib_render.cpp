@@ -112,9 +112,12 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
 
     V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
     V4F32 maxColor = AddV4F32(right->color, ScaleV4F32(gradients->colorXStep, xPreStep));
-
-    V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
-    V2F32 maxTexCoord = AddV2F32(right->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
+    
+    // TODO: Need to take care of xPreStep but this code have a bug
+    //V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
+    //V2F32 maxTexCoord = AddV2F32(right->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
+    V2F32 minTexCoord = left->texCoord;
+    V2F32 maxTexCoord = right->texCoord;
     
     // TODO: Should be able to step whit only xStep (no lerp needed)
     //F32 lerpT = 0;
@@ -129,10 +132,10 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
 
         //V2F32 srcTexCoord = LerpV2F32(minTexCoord, maxTexCoord, lerpT);
         V2F32 srcTexCoord = minTexCoord;
-        U32 srcX = (srcTexCoord.x * (bitmap->width  - 1) + 0.5f);
-        U32 srcY = (srcTexCoord.y * (bitmap->height - 1) + 0.5f);
+        U32 srcX = (U32)(srcTexCoord.x * (bitmap->width  - 1) + 0.5f);
+        U32 srcY = (U32)(srcTexCoord.y * (bitmap->height - 1) + 0.5f);
         
-        //CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
+        CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
         minTexCoord = AddV2F32(minTexCoord, gradients->texCoordXStep);
 
         //lerpT += lerpStep;
