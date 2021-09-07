@@ -4,8 +4,8 @@
 
 static M4F32 projection;
 
-#define BITMAP_WIDTH 64 
-#define BITMAP_HEIGHT 64 
+#define BITMAP_WIDTH 32 
+#define BITMAP_HEIGHT 32 
 static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
 

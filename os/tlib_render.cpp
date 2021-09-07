@@ -40,8 +40,8 @@ Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
     V4F32 dColorX = SubV4F32(ScaleV4F32(SubV4F32(result.color[1], result.color[2]), (v0.pos.y - v2.pos.y)), 
                              ScaleV4F32(SubV4F32(result.color[0], result.color[2]), (v1.pos.y - v2.pos.y)));
 
-    V4F32 dColorY = SubV4F32(ScaleV4F32(SubV4F32(result.color[0], result.color[2]), (v0.pos.x - v2.pos.x)), 
-                             ScaleV4F32(SubV4F32(result.color[1], result.color[2]), (v1.pos.x - v2.pos.x)));
+    V4F32 dColorY = SubV4F32(ScaleV4F32(SubV4F32(result.color[1], result.color[2]), (v0.pos.x - v2.pos.x)), 
+                             ScaleV4F32(SubV4F32(result.color[0], result.color[2]), (v1.pos.x - v2.pos.x)));
 
     result.colorXStep = ScaleV4F32(dColorX, oneOverDX);
     result.colorYStep = ScaleV4F32(dColorY, oneOverDY);
