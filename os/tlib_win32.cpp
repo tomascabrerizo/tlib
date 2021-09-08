@@ -3,19 +3,66 @@
 
 #include "tlib_types.h"
 #include "tlib_math.h"
+#include "tlib_platform.h"
 #include "tlib_win32.h"
 
 #define WINDOW_WIDTH 800 
 #define WINDOW_HEIGHT 600
 
+// NOTE: Platform code
+
+Arena PlatformArenaCreate()
+{
+    Arena result = {};
+    //result.data = (U8 *)VirtualAlloc(0, 
+    //  LPVOID lpAddress,
+    //  SIZE_T dwSize,
+    //  DWORD  flAllocationType,
+    //  DWORD  flProtect
+    //);
+
+    return result;
+}
+
+void PlatformArenaCommit(Arena *arena, size_t size)
+{
+}
+
+void PlatformArenaDecommit(Arena *arena)
+{
+}
+
+void PlatformArenaReserve(Arena *arena, size_t size)
+{
+}
+
+void PlatformArenaFree(Arena *arena)
+{
+}
+
+void *globalSratchBuffer;
+void *PlatformReadFile(char *fileName)
+{
+    HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, FILE_SHARE_READ, 0, 0, 0, 0);
+    if(fileHandle)
+    {
+        LARGE_INTEGER fileSize = {};
+        GetFileSizeEx(fileHandle, &fileSize);
+        ReadFileEx(fileHandle, globalSratchBuffer, fileSize.QuadPart, 0, 0);
+    }
+    else
+    {
+        // TODO: Good loggin system
+    }
+    return globalSratchBuffer;
+}
+
+// NOTE: Win32 Code
+
 // NOTE: Globals variables
 static B8 globalRunning;
 static Win32BackBuffer globalBackBuffer;
 static HDC globalWindowDC;
-
-// NOTE: Functions to the client
-void GameInit(BackBuffer *backBuffer);
-void GameUpdateAndRender(BackBuffer *backBuffer, F32 dt);
 
 void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buffer)
 {
