@@ -7,30 +7,40 @@
 // NOTE: Functions that the codebase need to use and are implemented in 
 // the diferents platform layers
 
-#define Kilobytes(value) (value*1024LL)
-#define Megabytes(value) (Kilobytes(value)*1024LL)
-#define Gigabytes(value) (Megabytes(value)*1024LL)
+#define KB(value) (value*1024LL)
+#define MB(value) (KB(value)*1024LL)
+#define GB(value) (MB(value)*1024LL)
+
+typedef void *MemoryReserve(size_t size);
+typedef void MemoryChage(void *ptr, size_t size);
+
+// NOTE: Memory virtual table
+struct Memory
+{
+    MemoryReserve *Reserve;
+    MemoryChage *Commit;
+    MemoryChage *Decommit;
+    MemoryChage *Release;
+};
+
+Memory PlatformCreateMemory();
 
 struct Arena
 {
-    U8 *data;
-    size_t usage;
+    Memory *platform;
+    U8 *memory;
+    size_t pos;
     size_t size;
+    size_t capacity;
 };
 
-#define ARENA_DEAULF_RESERVE_SIZE Gigabytes(1);
-#define ARENA_DEAULF_COMMIT_SIZE Megabytes(64);
+#define DEFAULT_RESERVE_SIZE GB(1);
+#define DEFAULT_COMMIT_SIZE MB(64);
 
-Arena PlatformArenaCreate();
+Arena CreateArena(Memory* platformMemory);
+void *PushArena(Arena *arena, size_t size);
 
-void PlatformArenaCommit(Arena *arena, size_t size);
-void PlatformArenaDecommit(Arena *arena);
-
-void PlatformArenaReserve(Arena *arena, size_t size);
-void PlatformArenaFree(Arena *arena);
-
-void *PlatformReadFile(char *fileName);
-
+void *PlatformReadFile(Arena *arena, char *fileName);
 
 // NOTE: Functions that platform need to use 
 void GameInit(BackBuffer *backBuffer);

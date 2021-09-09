@@ -1,5 +1,6 @@
 #include "tlib_main.cpp"
 #include "tlib_render.cpp"
+#include "tlib_platform.cpp"
 
 #include "tlib_types.h"
 #include "tlib_math.h"
@@ -11,43 +12,48 @@
 
 // NOTE: Platform code
 
-Arena PlatformArenaCreate()
-{
-    Arena result = {};
-    //result.data = (U8 *)VirtualAlloc(0, 
-    //  LPVOID lpAddress,
-    //  SIZE_T dwSize,
-    //  DWORD  flAllocationType,
-    //  DWORD  flProtect
-    //);
 
+void *Win32MemoryReserve(size_t size)
+{   
+    void *result = VirtualAlloc(0, size, MEM_RESERVE, PAGE_READWRITE);
     return result;
 }
 
-void PlatformArenaCommit(Arena *arena, size_t size)
+void Win32MemoryCommit(void *ptr, size_t size)
 {
+    VirtualAlloc(ptr, size, MEM_COMMIT, PAGE_READWRITE);
 }
 
-void PlatformArenaDecommit(Arena *arena)
+void Win32MemoryDecommit(void *ptr, size_t size)
 {
+    VirtualFree(ptr, size, MEM_DECOMMIT);
 }
 
-void PlatformArenaReserve(Arena *arena, size_t size)
+void Win32MemoryRelease(void *ptr, size_t size)
 {
+    VirtualFree(ptr, size, MEM_RELEASE);
 }
 
-void PlatformArenaFree(Arena *arena)
+Memory PlatformCreateMemory()
 {
+    Memory result = {};
+    result.Reserve = Win32MemoryReserve;
+    result.Commit = Win32MemoryCommit;
+    result.Decommit = Win32MemoryDecommit;
+    result.Release = Win32MemoryRelease;
+    return result;
 }
+
 
 void *globalSratchBuffer;
-void *PlatformReadFile(char *fileName)
+void *PlatformReadFile(Arena *arena, char *fileName)
 {
     HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, FILE_SHARE_READ, 0, 0, 0, 0);
     if(fileHandle)
     {
         LARGE_INTEGER fileSize = {};
         GetFileSizeEx(fileHandle, &fileSize);
+        // TODO: Read file into arena
         ReadFileEx(fileHandle, globalSratchBuffer, fileSize.QuadPart, 0, 0);
     }
     else
@@ -132,7 +138,7 @@ Win32WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     return result;
 }
 
-// TODO: Remove star field from the platfom layer
+// TODO: Remove star field from the platform layer
 
 void StarFieldInit(StarField *starField)
 {

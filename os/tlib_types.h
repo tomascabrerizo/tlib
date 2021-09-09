@@ -15,6 +15,12 @@ typedef float F32;
 typedef uint8_t B8;
 typedef uint32_t B32;
 
+// TODO: Puts this defines in a base file
+
+#include <assert.h>
+
+#define Assert(value) assert(value)
+
 #define Align64(value) (((value) + 0x7) & ~0x7)
 #define Align32(value) (((value) + 0x3) & ~0x3)
 
