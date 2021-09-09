@@ -33,3 +33,9 @@ void *PushArena(Arena *arena, size_t size)
     }
     return result;
 }
+
+void ReleaseArena(Arena *arena)
+{
+    arena->platform->Decommit(arena->memory, arena->size);
+    arena->platform->Release(arena->memory, arena->capacity);
+}

@@ -39,6 +39,7 @@ struct Arena
 
 Arena CreateArena(Memory* platformMemory);
 void *PushArena(Arena *arena, size_t size);
+void ReleaseArena(Arena *arena);
 
 void *PlatformReadFile(Arena *arena, char *fileName);
 

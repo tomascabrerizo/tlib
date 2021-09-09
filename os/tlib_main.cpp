@@ -1,6 +1,7 @@
 #include "tlib_types.h"
 #include "tlib_math.h"
 #include "tlib_render.h"
+#include "tlib_platform.h"
 
 static M4F32 projection;
 
@@ -8,6 +9,8 @@ static M4F32 projection;
 #define BITMAP_HEIGHT 8
 static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
+
+static Arena TestArena;
 
 void GameInit(BackBuffer *buffer)
 {
@@ -26,6 +29,9 @@ void GameInit(BackBuffer *buffer)
         *comp++ = RandomF32()*255.0f;
         *comp++ = RandomF32()*255.0f;
     }
+
+    TestArena = CreateArena(&PlatformCreateMemory());
+    ReleaseArena(&TestArena);
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
