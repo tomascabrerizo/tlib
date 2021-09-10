@@ -35,7 +35,7 @@ struct Arena
 };
 
 #define DEFAULT_RESERVE_SIZE GB(1);
-#define DEFAULT_COMMIT_SIZE MB(64);
+#define DEFAULT_COMMIT_SIZE MB(8);
 
 Arena CreateArena(Memory* platformMemory);
 void *PushArena(Arena *arena, size_t size);

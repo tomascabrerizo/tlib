@@ -19,6 +19,7 @@ void *PushArena(Arena *arena, size_t size)
 {
     void *result = 0;
     size_t alignSize = Align64(size);
+    Assert(arena->pos + alignSize <= arena->size);
     if(arena->pos + alignSize <= arena->size)
     {
         result = arena->memory + arena->pos;
