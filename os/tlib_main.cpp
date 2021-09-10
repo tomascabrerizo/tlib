@@ -2,6 +2,7 @@
 #include "tlib_math.h"
 #include "tlib_string.h"
 #include "tlib_render.h"
+#include "tlib_mesh.h"
 
 static M4F32 projection;
 
@@ -9,6 +10,7 @@ static M4F32 projection;
 #define BITMAP_HEIGHT 8
 static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
+static Arena gameArena;
 
 void GameInit(BackBuffer *buffer)
 {
@@ -28,14 +30,8 @@ void GameInit(BackBuffer *buffer)
         *comp++ = RandomF32()*255.0f;
     }
     
-    // NOTE: tlib Strings tests
-    String test0 = _String("3879.32131 Tlib from Tomas Cabrerizo");
-    StringPrint(test0);
-    String test1 = StringSplit(&test0, ' ');
-    StringPrint(test1);
-    F32 test1Float = StringToFloat(test1);
-    printf("float number: %f\n", test1Float);
-    StringPrint(test0);
+    gameArena = CreateArena(&PlatformCreateMemory());
+    ObjResult cubeFile = LoadObjFile(&gameArena, "data/box.obj");    
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)

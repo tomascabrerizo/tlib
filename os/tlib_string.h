@@ -45,6 +45,12 @@ inline String StringTrimRight(String string)
     return result;
 }
 
+inline String StringTrim(String string)
+{
+    String result = StringTrimLeft(StringTrimRight(string));
+    return result;
+}
+
 inline String StringSplit(String *string, I8 delim)
 {
     String result = *string;
@@ -60,7 +66,6 @@ inline String StringSplit(String *string, I8 delim)
             return result;
         }
     }
-
     return result;
 }
 
@@ -106,7 +111,6 @@ inline I32 StringToInt(String string)
         }
         
     }
-
     return negative ? -integerNum : integerNum;
 }
 
@@ -149,10 +153,8 @@ inline F32 StringToFloat(String string)
                 exponent *= base;
             }
         }
-
         floatNum = floatNum + (added / exponent);
     }
-
     return negative ? -floatNum : floatNum;
 }
 

@@ -47,19 +47,25 @@ Memory PlatformCreateMemory()
 FileRes PlatformReadFile(Arena *arena, char *fileName)
 {
     FileRes result = {};
-    HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, FILE_SHARE_READ, 0, 0, 0, 0);
-    if(fileHandle)
+    HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, 
+                                              FILE_SHARE_READ, 0, 
+                                              OPEN_EXISTING, 
+                                              FILE_ATTRIBUTE_NORMAL, 0);
+    Assert(fileHandle != INVALID_HANDLE_VALUE);
+    if(fileHandle != INVALID_HANDLE_VALUE)
     {
         LARGE_INTEGER fileSize = {};
         GetFileSizeEx(fileHandle, &fileSize);
         result.size = fileSize.QuadPart;
         result.data = PushArena(arena, result.size);
-        ReadFileEx(fileHandle, result.data, result.size, 0, 0);
+        ReadFile(fileHandle, result.data, result.size, 0, 0);
     }
     else
     {
         // TODO: Good loggin system
+        U32 fileNotFound = 0;
     }
+    CloseHandle(fileHandle);
     return result;
 }
 
