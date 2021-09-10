@@ -1,7 +1,7 @@
 #include "tlib_types.h"
 #include "tlib_math.h"
+#include "tlib_string.h"
 #include "tlib_render.h"
-#include "tlib_platform.h"
 
 static M4F32 projection;
 
@@ -9,8 +9,6 @@ static M4F32 projection;
 #define BITMAP_HEIGHT 8
 static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
-
-static Arena TestArena;
 
 void GameInit(BackBuffer *buffer)
 {
@@ -24,14 +22,20 @@ void GameInit(BackBuffer *buffer)
     randomBitmap.pixels = bitmapData;
     for(I32 index = 0; index < randomBitmap.width*randomBitmap.height; ++index)
     {
-        U8 *comp = (U8*)(randomBitmap.pixels + index);
+        U8 *comp = (U8 *)(randomBitmap.pixels + index);
         *comp++ = RandomF32()*255.0f;
         *comp++ = RandomF32()*255.0f;
         *comp++ = RandomF32()*255.0f;
     }
-
-    TestArena = CreateArena(&PlatformCreateMemory());
-    ReleaseArena(&TestArena);
+    
+    // NOTE: tlib Strings tests
+    String test0 = _String("3879.32131 Tlib from Tomas Cabrerizo");
+    StringPrint(test0);
+    String test1 = StringSplit(&test0, ' ');
+    StringPrint(test1);
+    F32 test1Float = StringToFloat(test1);
+    printf("float number: %f\n", test1Float);
+    StringPrint(test0);
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)

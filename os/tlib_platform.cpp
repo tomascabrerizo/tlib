@@ -30,6 +30,9 @@ void *PushArena(Arena *arena, size_t size)
         Assert(arena->size + commitSize <= arena->capacity);
         arena->platform->Commit(arena->memory, commitSize);
         arena->size += commitSize;
+        
+        result = arena->memory + arena->pos;
+        arena->pos += alignSize;
     }
     return result;
 }

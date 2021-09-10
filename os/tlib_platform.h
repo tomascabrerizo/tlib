@@ -41,11 +41,16 @@ Arena CreateArena(Memory* platformMemory);
 void *PushArena(Arena *arena, size_t size);
 void ReleaseArena(Arena *arena);
 
-void *PlatformReadFile(Arena *arena, char *fileName);
+struct FileRes
+{
+    void *data;
+    size_t size;
+};
+
+FileRes PlatformReadFile(Arena *arena, char *fileName);
 
 // NOTE: Functions that platform need to use 
 void GameInit(BackBuffer *backBuffer);
 void GameUpdateAndRender(BackBuffer *backBuffer, F32 dt);
-
 
 #endif // TLIB_PLATFORM_H

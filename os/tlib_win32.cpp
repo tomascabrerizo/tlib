@@ -44,23 +44,23 @@ Memory PlatformCreateMemory()
     return result;
 }
 
-
-void *globalSratchBuffer;
-void *PlatformReadFile(Arena *arena, char *fileName)
+FileRes PlatformReadFile(Arena *arena, char *fileName)
 {
+    FileRes result = {};
     HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, FILE_SHARE_READ, 0, 0, 0, 0);
     if(fileHandle)
     {
         LARGE_INTEGER fileSize = {};
         GetFileSizeEx(fileHandle, &fileSize);
-        // TODO: Read file into arena
-        ReadFileEx(fileHandle, globalSratchBuffer, fileSize.QuadPart, 0, 0);
+        result.size = fileSize.QuadPart;
+        result.data = PushArena(arena, result.size);
+        ReadFileEx(fileHandle, result.data, result.size, 0, 0);
     }
     else
     {
         // TODO: Good loggin system
     }
-    return globalSratchBuffer;
+    return result;
 }
 
 // NOTE: Win32 Code
@@ -199,13 +199,17 @@ void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starFi
     }
 }
 
+#if 1
+int main(void)
+#else
 INT WINAPI 
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
+#endif
 {
     WNDCLASSA windowClass = {};
     windowClass.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
     windowClass.lpfnWndProc = Win32WindowProc;
-    windowClass.hInstance = hInstance;
+    windowClass.hInstance = 0/*hInstance*/; // TODO: re-enable hInstance
     windowClass.lpszClassName = "tlibWindowClass";
 
     RegisterClassA(&windowClass);
@@ -214,7 +218,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
                                   WS_VISIBLE|WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,
                                   CW_USEDEFAULT, CW_USEDEFAULT,
                                   WINDOW_WIDTH, WINDOW_HEIGHT,
-                                  0, 0, hInstance, 0);
+                                  0, 0, 0/*hInstance*/, 0);
 
     // NOTE: Pass the backbuffer into the game
     BackBuffer backBuffer = {};
