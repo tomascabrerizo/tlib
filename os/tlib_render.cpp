@@ -204,9 +204,19 @@ void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vert
     Vertex minVert = v0; 
     Vertex midVert = v1;
     Vertex maxVert = v2;
+
     minVert.pos = ToScreenSpace(buffer, v0.pos);
     midVert.pos = ToScreenSpace(buffer, v1.pos);
     maxVert.pos = ToScreenSpace(buffer, v2.pos);
+    
+    // NOTE: Face culling
+    // TODO: Probably could be merge with handness
+    V3F32 realMin = _V3F32(minVert.pos.x, minVert.pos.y, minVert.pos.z);
+    V3F32 realMid = _V3F32(midVert.pos.x, midVert.pos.y, midVert.pos.z);
+    V3F32 realMax = _V3F32(maxVert.pos.x, maxVert.pos.y, maxVert.pos.z);
+    V3F32 culling = CrossV3F32(SubV3F32(realMax, realMin),
+                               SubV3F32(realMid, realMin));
+    if(culling.z > 0) return;
 
     // TODO: Create a vertex struct to not have to swap 
     // interpolants values as well
