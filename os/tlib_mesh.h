@@ -1,10 +1,17 @@
 #ifndef TLIB_MESH_H
 #define TLIB_MESH_H
 
+#include "tlib_render.h"
 #include "tlib_types.h"
 #include "tlib_platform.h"
 #include "tlib_string.h"
 #include "tlib_math.h"
+
+struct Mesh
+{
+    Vertex *vertex;
+    U32 vertexCount;
+};
 
 struct ObjResult
 {
@@ -15,19 +22,23 @@ struct ObjResult
     U32 texCoordCount;
 
     U32 *indices;
+    U32 *texIndices;
     U32 indicesCout;
 };
 
-inline ObjResult LoadObjFile(Arena *arena, char *fileName)
+inline Mesh LoadObjFile(Arena *arena, char *fileName)
 {
-    ObjResult result = {};
-
+    ObjResult objResult = {};
+    
+    // TODO: Allocate memory with PlatformCreateMemory.Reserve instead of create and arena
     Arena fileArena = CreateArena(&PlatformCreateMemory());
     FileRes objFile = PlatformReadFile(&fileArena, fileName);
 
     String objContent = _String((char *)objFile.data);
     
     // NOTE: First pass get the buffers sizes
+    // TODO: Maybe dont allocate space for the different buffer,
+    // just add them as it goes becouse there are in order
     String countString = objContent;
     while(countString.size > 0)
     {
@@ -38,22 +49,23 @@ inline ObjResult LoadObjFile(Arena *arena, char *fileName)
             {
                 switch(*(line.data + 1))
                 {
-                    case ' ': { ++result.vertexCount; } break;
-                    case 't': { ++result.texCoordCount; } break;
+                    case ' ': { ++objResult.vertexCount; } break;
+                    case 't': { ++objResult.texCoordCount; } break;
                     case 'n': { } break;
                 }
             }break;
             case 'f':
             {
-                ++result.indicesCout;
+                ++objResult.indicesCout;
             }break;
         }
     }
 
     // NOTE: Alloc all the necessary buffers in the arena
-    result.vertex = (V3F32 *)PushArena(arena, result.vertexCount*sizeof(V3F32));
-    result.texCoord = (V2F32 *)PushArena(arena, result.texCoordCount*sizeof(V2F32));
-    result.indices = (U32 *)PushArena(arena, result.indicesCout*sizeof(U32)*3);
+    objResult.vertex = (V3F32 *)PushArena(&fileArena, objResult.vertexCount*sizeof(V3F32));
+    objResult.texCoord = (V2F32 *)PushArena(&fileArena, objResult.texCoordCount*sizeof(V2F32));
+    objResult.indices = (U32 *)PushArena(&fileArena, objResult.indicesCout*sizeof(U32)*3);
+    objResult.texIndices = (U32 *)PushArena(&fileArena, objResult.indicesCout*sizeof(U32)*3);
     
     U32 vertexCount = 0;
     U32 texCoordCount = 0;
@@ -71,22 +83,20 @@ inline ObjResult LoadObjFile(Arena *arena, char *fileName)
                     case ' ': 
                     {
                         line.data += 2;
-                        V3F32 *vertex = result.vertex + vertexCount;
+                        V3F32 *vertex = objResult.vertex + vertexCount;
                         vertex->x = StringToFloat(StringSplit(&line, ' '));
                         vertex->y = StringToFloat(StringSplit(&line, ' '));
                         vertex->z = StringToFloat(StringSplit(&line, ' '));
                         ++vertexCount;
-                        printf("v:(%f, %f, %f)\n", vertex->x, vertex->y, vertex->z);
 
                     } break;
                     case 't': 
                     {
                         line.data += 3;
-                        V2F32 *texCoord = result.texCoord + texCoordCount;
+                        V2F32 *texCoord = objResult.texCoord + texCoordCount;
                         texCoord->x = StringToFloat(StringSplit(&line, ' '));
                         texCoord->y = StringToFloat(StringSplit(&line, ' '));
                         ++texCoordCount;
-                        printf("vt:(%f, %f)\n", texCoord->x, texCoord->y);
                     } break;
                     case 'n': 
                     {
@@ -101,18 +111,32 @@ inline ObjResult LoadObjFile(Arena *arena, char *fileName)
                 String vertIndex1 = StringSplit(&line, ' ');
                 String vertIndex2 = StringSplit(&line, ' ');
                 
-                result.indices[indicesCount + 0] = StringToInt(StringSplit(&vertIndex0, '/')); 
-                result.indices[indicesCount + 1] = StringToInt(StringSplit(&vertIndex1, '/')); 
-                result.indices[indicesCount + 2] = StringToInt(StringSplit(&vertIndex2, '/')); 
-                
-                printf("idc:(%d, %d, %d)\n", result.indices[indicesCount + 0],
-                                             result.indices[indicesCount + 1],
-                                             result.indices[indicesCount + 2]);
+                objResult.indices[indicesCount + 0] = StringToInt(StringSplit(&vertIndex0, '/')); 
+                objResult.texIndices[indicesCount + 0] = StringToFloat(StringSplit(&vertIndex0, '/')); 
 
+                objResult.indices[indicesCount + 1] = StringToInt(StringSplit(&vertIndex1, '/')); 
+                objResult.texIndices[indicesCount + 1] = StringToFloat(StringSplit(&vertIndex1, '/')); 
+
+                objResult.indices[indicesCount + 2] = StringToInt(StringSplit(&vertIndex2, '/')); 
+                objResult.texIndices[indicesCount + 2] = StringToFloat(StringSplit(&vertIndex2, '/')); 
+                
                 indicesCount += 3;
 
             }break;
         }
+    }
+    
+    // TODO: Create the final mesh in the destination arena
+    Mesh result = {};
+    result.vertexCount = objResult.indicesCout*3;
+    result.vertex = (Vertex *)PushArena(arena, result.vertexCount*sizeof(Vertex));
+    for(U32 i = 0; i < result.vertexCount; ++i)
+    {
+        V3F32 vertex = objResult.vertex[objResult.indices[i]-1];
+        result.vertex[i].pos = _V4F32(vertex.x, vertex.y, vertex.z, 1.0f); 
+        // TODO: Get texCoord indices
+        result.vertex[i].texCoord = objResult.texCoord[objResult.texIndices[i]-1];
+        result.vertex[i].color = _V4F32(1.0f, 0.0f, 0.0f, 1.0f); 
     }
 
     // NOTE: Release the file arena, we dont need it any more
