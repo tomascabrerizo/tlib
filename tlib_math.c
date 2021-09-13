@@ -4,15 +4,11 @@
 #include <math.h>
 
 // NOTE: Random numbers
-F32 RandomF32()
+F32 RandomF32(void)
 {
     F32 result = (F32)rand()/RAND_MAX;
     return result;
 }
-
-// NOTE: Trigonometry functions
-
-#define NUM_PI 3.14159265359
 
 F32 ToRadians(F32 angle)
 {
@@ -42,7 +38,7 @@ F32 TanF32(F32 angle)
 
 I32 CeilF32I32(F32 value)
 {
-    I32 result = ceilf(value);
+    I32 result = (I32)ceilf(value);
     return result;
 }
 
@@ -281,7 +277,7 @@ M4F32 MultM4F32(M4F32 a, M4F32 b)
     return result;
 }
 
-M4F32 IdentityM4F32()
+M4F32 IdentityM4F32(void)
 {
     M4F32 result = {0};
     result.m[0][0] = 1.0f;

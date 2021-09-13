@@ -4,10 +4,10 @@
 #include "tlib_types.h"
 
 // NOTE: Random numbers
-F32 RandomF32();
+F32 RandomF32(void);
 
 // NOTE: Trigonometry functions
-#define NUM_PI 3.14159265359
+#define NUM_PI 3.14159265359f
 
 F32 ToRadians(F32 angle);
 
@@ -101,7 +101,7 @@ typedef struct
 } M4F32;
 
 // NOTE: Matrix functions 
-M4F32 IdentityM4F32();
+M4F32 IdentityM4F32(void);
 M4F32 ScaleM4F32(F32 scale);
 M4F32 TranslateM4F32(V3F32 translate);
 

@@ -37,7 +37,7 @@ void Win32MemoryRelease(void *ptr, size_t size)
     VirtualFree(ptr, size, MEM_RELEASE);
 }
 
-Memory PlatformCreateMemory()
+Memory PlatformCreateMemory(void)
 {
     Memory result = {0};
     result.Reserve = Win32MemoryReserve;
@@ -61,12 +61,11 @@ FileRes PlatformReadFile(Arena *arena, char *fileName)
         GetFileSizeEx(fileHandle, &fileSize);
         result.size = fileSize.QuadPart;
         result.data = PushArena(arena, result.size);
-        ReadFile(fileHandle, result.data, result.size, 0, 0);
+        ReadFile(fileHandle, result.data, (DWORD)result.size, 0, 0);
     }
     else
     {
         // TODO: Good loggin system
-        U32 fileNotFound = 0;
     }
     CloseHandle(fileHandle);
     return result;
@@ -89,12 +88,13 @@ void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buff
     // NOTE: Init the bitmap info
     buffer->bitmapInfo.bmiHeader.biSize = sizeof(buffer->bitmapInfo.bmiHeader);
     buffer->bitmapInfo.bmiHeader.biWidth = buffer->width;
-    buffer->bitmapInfo.bmiHeader.biHeight = -buffer->height;
+    buffer->bitmapInfo.bmiHeader.biHeight = -(I32)(buffer->height);
     buffer->bitmapInfo.bmiHeader.biPlanes = 1;
     buffer->bitmapInfo.bmiHeader.biBitCount = 32;
     buffer->bitmapInfo.bmiHeader.biCompression = BI_RGB;
 
-    buffer->bitmap = CreateDIBSection(deviceContext, &buffer->bitmapInfo, DIB_RGB_COLORS, &((void *)buffer->pixels), 0, 0);
+    buffer->bitmap = 
+        CreateDIBSection(deviceContext, &buffer->bitmapInfo, DIB_RGB_COLORS, (void **)&(buffer->pixels), 0, 0);
     
     // NOTE: Create a compatible device context to be able to blit it on window
     buffer->bufferDC = CreateCompatibleDC(deviceContext);
@@ -168,8 +168,8 @@ void StarFieldInit(StarField *starField)
 void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starField)
 {
     // NOTE: Project coordinate to the buffer width and height
-    U32 halfBufferWidht = 0.5f*buffer->width;
-    U32 halfBufferHeight = 0.5f*buffer->height;
+    U32 halfBufferWidht = (U32)(0.5f*buffer->width);
+    U32 halfBufferHeight = (U32)(0.5f*buffer->height);
     for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
     {
         // NOTE: Update Star
@@ -186,11 +186,11 @@ void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starFi
         {
             // NOTE: Project Star into screen space
             F32 z = starField->pos[index].z;
-            I32 screenX = (starField->pos[index].x/z * halfBufferWidht) + halfBufferWidht;
-            I32 screenY = (starField->pos[index].y/z * halfBufferHeight) + halfBufferHeight;
+            I32 screenX = (I32)((starField->pos[index].x/z * halfBufferWidht) + halfBufferWidht);
+            I32 screenY = (I32)((starField->pos[index].y/z * halfBufferHeight) + halfBufferHeight);
             
-            if(screenX < 0 || screenX >= buffer->width || 
-               screenY < 0 || screenY >= buffer->height)
+            if(screenX < 0 || screenX >= (I32)buffer->width || 
+               screenY < 0 || screenY >= (I32)buffer->height)
             {
                 starField->pos[index].x = (RandomF32() - 0.5f) * 2;
                 starField->pos[index].y = (RandomF32() - 0.5f) * 2;
@@ -272,7 +272,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         if(frameTime < secondsPerFrame)
         {
             F64 sleepTime = (secondsPerFrame - frameTime) * 1000.0;
-            Sleep(sleepTime);
+            Sleep((DWORD)sleepTime);
         }
         QueryPerformanceCounter(&currentTime);
 #if 0

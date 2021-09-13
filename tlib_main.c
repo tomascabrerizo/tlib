@@ -23,17 +23,17 @@ void GameInit(BackBuffer *buffer)
     randomBitmap.width = BITMAP_WIDTH;
     randomBitmap.height = BITMAP_HEIGHT;
     randomBitmap.pixels = bitmapData;
-    for(I32 index = 0; index < randomBitmap.width*randomBitmap.height; ++index)
+    for(U32 index = 0; index < randomBitmap.width*randomBitmap.height; ++index)
     {
         U8 *comp = (U8 *)(randomBitmap.pixels + index);
-        *comp++ = RandomF32()*255.0f;
-        *comp++ = RandomF32()*255.0f;
-        *comp++ = 255.0f;//RandomF32()*255.0f;
+        *comp++ = (U8)(RandomF32()*255.0f);
+        *comp++ = (U8)(RandomF32()*255.0f);
+        *comp++ = (U8)255.0f;//(RandomF32()*255.0f);
     }
     
     Memory memory = PlatformCreateMemory();
     gameArena = CreateArena(&memory);
-    boxMesh = LoadObjFile(&gameArena, "data/box.obj");    
+    boxMesh = LoadObjFile(&gameArena, "data/box.obj");   
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)

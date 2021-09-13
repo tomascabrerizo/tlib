@@ -4,7 +4,7 @@ String _String(char *cstring)
 {
     String result = {0};
     result.data = (I8 *)cstring;
-    result.size = strlen(cstring);
+    result.size = (U32)strlen(cstring);
     return result;
 }
 

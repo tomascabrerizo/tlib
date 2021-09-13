@@ -138,7 +138,7 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
         F32 z = 1.0f/minOneOverZ;
 
         V4F32 color = ScaleV4F32(ScaleV4F32(minColor, z), 255);
-        DrawPixel(buffer, x, y, color.x, color.y, color.z);
+        DrawPixel(buffer, x, y, (U8)color.x, (U8)color.y, (U8)color.z);
         minColor = AddV4F32(minColor, gradients->colorXStep);
 
         V2F32 srcTexCoord = minTexCoord;
@@ -254,8 +254,8 @@ V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
 {
     V4F32 result = _V4F32(v.x, v.y, v.z, v.w);
     
-    I32 halfWidth = 0.5f*buffer->width;
-    I32 halfHeight = 0.5f*buffer->height;
+    I32 halfWidth = (I32)(0.5f*buffer->width);
+    I32 halfHeight = (I32)(0.5f*buffer->height);
     
     if(v.w != 0)
     {

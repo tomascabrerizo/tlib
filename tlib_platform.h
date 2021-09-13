@@ -23,7 +23,7 @@ typedef struct
     MemoryChage *Release;
 } Memory;
 
-Memory PlatformCreateMemory();
+Memory PlatformCreateMemory(void);
 
 typedef struct
 {
