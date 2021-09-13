@@ -12,6 +12,7 @@ typedef int16_t I16;
 typedef int32_t I32;
 typedef int64_t I64;
 typedef float F32;
+typedef double F64;
 typedef uint8_t B8;
 typedef uint32_t B32;
 

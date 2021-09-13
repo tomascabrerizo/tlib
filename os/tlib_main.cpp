@@ -28,7 +28,7 @@ void GameInit(BackBuffer *buffer)
         U8 *comp = (U8 *)(randomBitmap.pixels + index);
         *comp++ = RandomF32()*255.0f;
         *comp++ = RandomF32()*255.0f;
-        *comp++ = RandomF32()*255.0f;
+        *comp++ = 255.0f;//RandomF32()*255.0f;
     }
     
     gameArena = CreateArena(&PlatformCreateMemory());
@@ -50,10 +50,14 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
         v0.pos = MultM4F32V4F32(RotateYM4F32(angle), v0.pos);
         v1.pos = MultM4F32V4F32(RotateYM4F32(angle), v1.pos);
         v2.pos = MultM4F32V4F32(RotateYM4F32(angle), v2.pos);
+        //
+        //v0.pos = MultM4F32V4F32(RotateZM4F32(angle), v0.pos);
+        //v1.pos = MultM4F32V4F32(RotateZM4F32(angle), v1.pos);
+        //v2.pos = MultM4F32V4F32(RotateZM4F32(angle), v2.pos);
         
-        v0.pos = MultM4F32V4F32(RotateZM4F32(angle), v0.pos);
-        v1.pos = MultM4F32V4F32(RotateZM4F32(angle), v1.pos);
-        v2.pos = MultM4F32V4F32(RotateZM4F32(angle), v2.pos);
+        v0.pos = MultM4F32V4F32(RotateXM4F32(angle), v0.pos);
+        v1.pos = MultM4F32V4F32(RotateXM4F32(angle), v1.pos);
+        v2.pos = MultM4F32V4F32(RotateXM4F32(angle), v2.pos);
 
         // NOTE: Translate the box
         v0.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 5)), v0.pos);
@@ -68,7 +72,7 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
         // NOTE: fille triangle
         FillTriangle(buffer, &randomBitmap, v0, v1, v2);
     }
-    angle += 100 * dt;
+    angle += 50 * dt;
     if(angle > 360) angle = 0;
     
     // NOTE: Render random texture in (0, 0) pos

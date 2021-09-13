@@ -243,15 +243,10 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
     LARGE_INTEGER lastTime;
     QueryPerformanceCounter(&lastTime);
 
+    F64 secondsPerFrame = 1.0/30.0;
+
     while(globalRunning)
     {
-        LARGE_INTEGER currentTime;
-        QueryPerformanceCounter(&currentTime);
-        
-        I64 deltaTime = currentTime.QuadPart - lastTime.QuadPart;
-        F32 dt = ((F32)deltaTime / (F32)frequency.QuadPart);
-        lastTime = currentTime;
-
         MSG message;
         while(PeekMessageA(&message, window, 0, 0, PM_REMOVE))
         {
@@ -261,10 +256,23 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         
         Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
 
-        StarFieldUpdateAndRender(&globalBackBuffer, dt, &starField);
-        GameUpdateAndRender(&backBuffer, dt);
+        StarFieldUpdateAndRender(&globalBackBuffer, secondsPerFrame, &starField);
+        GameUpdateAndRender(&backBuffer, (F32)secondsPerFrame);
 
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
+        
+        // NOTE: Fix game time step
+        LARGE_INTEGER currentTime;
+        QueryPerformanceCounter(&currentTime);
+        
+        F64 frameTime = (F64)(currentTime.QuadPart - lastTime.QuadPart) / frequency.QuadPart;
+        if(frameTime < secondsPerFrame)
+        {
+            F64 sleepTime = (secondsPerFrame - frameTime) * 1000.0;
+            Sleep(sleepTime);
+        }
+        QueryPerformanceCounter(&currentTime);
+        lastTime = currentTime;
     }
     
     return 0;
