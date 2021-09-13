@@ -1,6 +1,9 @@
 #include "tlib_main.c"
 #include "tlib_render.c"
 #include "tlib_platform.c"
+#include "tlib_string.c"
+#include "tlib_math.c"
+#include "tlib_mesh.c"
 
 #include "tlib_types.h"
 #include "tlib_math.h"
