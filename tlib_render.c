@@ -12,7 +12,7 @@ Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v)
 
 Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
 {
-    Gradients result = {};
+    Gradients result = {0};
     
     F32 oneOverDX = 1.0f / ((v1.pos.x - v2.pos.x)*(v0.pos.y - v2.pos.y) -
                             (v0.pos.x - v2.pos.x)*(v1.pos.y - v2.pos.y));
@@ -67,7 +67,7 @@ Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
 
 Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY)
 {
-    Edge result = {};
+    Edge result = {0};
     result.startY = CeilF32I32(start.pos.y);
     result.endY = CeilF32I32(end.pos.y);
     

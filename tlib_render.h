@@ -4,31 +4,30 @@
 #include "tlib_types.h"
 #include "tlib_math.h"
 
-struct BackBuffer
+typedef struct
 {
     U32 *pixels;
     U32 width;
     U32 height;
-};
+} BackBuffer;
 
-struct Bitmap
+typedef struct
 {
     U32 *pixels;
     U32 width;
     U32 height;
-};
+} Bitmap;
 
 // TODO: Maybe have Vertex and screenVertex
-struct Vertex
+typedef struct
 {
     V4F32 pos;
     V4F32 color;
     V2F32 texCoord;
-};
+} Vertex;
 
 Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v);
-struct Gradients
-{
+typedef struct {
     // NOTE: Color gradients
     V4F32 color[3];
     V4F32 colorXStep;
@@ -42,11 +41,11 @@ struct Gradients
     F32 oneOverZ[3];
     F32 oneOverZXStep;
     F32 oneOverZYStep;
-};
+} Gradients;
 
 Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2);
 
-struct Edge
+typedef struct
 {
     F32 x;
     F32 xStep;
@@ -63,7 +62,7 @@ struct Edge
 
     F32 oneOverZ;
     F32 oneOverZStep;
-};
+} Edge;
 
 Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY);
 void StepEdge(Edge *edge);

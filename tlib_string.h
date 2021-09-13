@@ -5,15 +5,15 @@
 #include <string.h>
 #include <stdio.h>
 
-struct String
+typedef struct
 {
     I8 *data;
     U32 size;
-};
+} String;
 
 inline String _String(char *cstring)
 {
-    String result = {};
+    String result = {0};
     result.data = (I8 *)cstring;
     result.size = strlen(cstring);
     return result;

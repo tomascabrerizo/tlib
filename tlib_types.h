@@ -16,6 +16,9 @@ typedef double F64;
 typedef uint8_t B8;
 typedef uint32_t B32;
 
+#define true 1
+#define false 0
+
 // TODO: Puts this defines in a base file
 
 #include <assert.h>

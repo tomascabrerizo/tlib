@@ -31,7 +31,8 @@ void GameInit(BackBuffer *buffer)
         *comp++ = 255.0f;//RandomF32()*255.0f;
     }
     
-    gameArena = CreateArena(&PlatformCreateMemory());
+    Memory memory = PlatformCreateMemory();
+    gameArena = CreateArena(&memory);
     boxMesh = LoadObjFile(&gameArena, "data/box.obj");    
 }
 

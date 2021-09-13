@@ -77,26 +77,26 @@ inline F32 Lerp(F32 a, F32 b, F32 t)
 
 // NOTE: Vectors structs
 
-struct V2F32
+typedef struct
 {
     F32 x;
     F32 y;
-};
+} V2F32;
 
-struct V3F32
+typedef struct
 {
     F32 x;
     F32 y;
     F32 z;
-};
+} V3F32;
 
-struct V4F32
+typedef struct
 {
     F32 x;
     F32 y;
     F32 z;
     F32 w;
-};
+} V4F32;
 
 // NOTE: _Funtions are constructors for structs
 
@@ -253,7 +253,7 @@ inline F32 LenghtSqrtV3F32(V3F32 a)
     return result;
 }
 
-inline F32 LenghtV2F32(V3F32 a)
+inline F32 LenghtV3F32(V3F32 a)
 {
     F32 result = SquareRootF32(LenghtSqrtV3F32(a));
     return result;
@@ -293,16 +293,16 @@ inline V4F32 LerpV4F32(V4F32 a, V4F32 b, F32 t)
 
 // NOTE: Matrix structs
 
-struct M4F32
+typedef struct
 {
     F32 m[4][4];
-};
+} M4F32;
 
 // NOTE: Matrix functions 
 
 inline M4F32 MultM4F32(M4F32 a, M4F32 b)
 {
-    M4F32 result = {};
+    M4F32 result = {0};
     for(I32 j = 0; j < 4; ++j)
     {
         for(I32 i = 0; i < 4; ++i)
@@ -318,7 +318,7 @@ inline M4F32 MultM4F32(M4F32 a, M4F32 b)
 
 inline M4F32 IdentityM4F32()
 {
-    M4F32 result = {};
+    M4F32 result = {0};
     result.m[0][0] = 1.0f;
     result.m[1][1] = 1.0f;
     result.m[2][2] = 1.0f;
@@ -387,7 +387,7 @@ M4F32 PerspectiveM4F32(F32 fov, F32 aspect, F32 near, F32 far)
 {
     F32 tanHalfFov = TanF32(ToRadians(fov*0.5f));
     F32 range = (far - near);
-    M4F32 result = {};
+    M4F32 result = {0};
     result.m[0][0] = 1.0f / (aspect*tanHalfFov);
     result.m[1][1] = 1.0f / tanHalfFov;
     result.m[2][2] = far / range;
@@ -398,7 +398,7 @@ M4F32 PerspectiveM4F32(F32 fov, F32 aspect, F32 near, F32 far)
 
 V4F32 MultM4F32V4F32(M4F32 matrix, V4F32 v)
 {
-    V4F32 result = {};
+    V4F32 result = {0};
     result.x = ((matrix.m[0][0] * v.x) + (matrix.m[0][1] * v.y) + 
                 (matrix.m[0][2] * v.z) + (matrix.m[0][3] * v.w));
     

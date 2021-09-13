@@ -2,7 +2,7 @@
 
 Arena CreateArena(Memory* platformMemory)
 {
-    Arena result = {};
+    Arena result = {0};
    
     result.platform = platformMemory;
 

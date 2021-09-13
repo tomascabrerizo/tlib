@@ -1,6 +1,6 @@
-#include "tlib_main.cpp"
-#include "tlib_render.cpp"
-#include "tlib_platform.cpp"
+#include "tlib_main.c"
+#include "tlib_render.c"
+#include "tlib_platform.c"
 
 #include "tlib_types.h"
 #include "tlib_math.h"
@@ -36,7 +36,7 @@ void Win32MemoryRelease(void *ptr, size_t size)
 
 Memory PlatformCreateMemory()
 {
-    Memory result = {};
+    Memory result = {0};
     result.Reserve = Win32MemoryReserve;
     result.Commit = Win32MemoryCommit;
     result.Decommit = Win32MemoryDecommit;
@@ -46,7 +46,7 @@ Memory PlatformCreateMemory()
 
 FileRes PlatformReadFile(Arena *arena, char *fileName)
 {
-    FileRes result = {};
+    FileRes result = {0};
     HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, 
                                               FILE_SHARE_READ, 0, 
                                               OPEN_EXISTING, 
@@ -54,7 +54,7 @@ FileRes PlatformReadFile(Arena *arena, char *fileName)
     Assert(fileHandle != INVALID_HANDLE_VALUE);
     if(fileHandle != INVALID_HANDLE_VALUE)
     {
-        LARGE_INTEGER fileSize = {};
+        LARGE_INTEGER fileSize = {0};
         GetFileSizeEx(fileHandle, &fileSize);
         result.size = fileSize.QuadPart;
         result.data = PushArena(arena, result.size);
@@ -79,7 +79,7 @@ static HDC globalWindowDC;
 void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buffer)
 {
     // NOTE: Get the actual size of the renderable window
-    RECT windowRect = {};
+    RECT windowRect = {0};
     GetClientRect(window, &windowRect);
     buffer->width = windowRect.right - windowRect.left;
     buffer->height = windowRect.bottom - windowRect.top;
@@ -212,7 +212,7 @@ INT WINAPI
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 #endif
 {
-    WNDCLASSA windowClass = {};
+    WNDCLASSA windowClass = {0};
     windowClass.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
     windowClass.lpfnWndProc = Win32WindowProc;
     windowClass.hInstance = 0/*hInstance*/; // TODO: re-enable hInstance
@@ -227,7 +227,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
                                   0, 0, 0/*hInstance*/, 0);
 
     // NOTE: Pass the backbuffer into the game
-    BackBuffer backBuffer = {};
+    BackBuffer backBuffer = {0};
     backBuffer.pixels = globalBackBuffer.pixels;
     backBuffer.width = globalBackBuffer.width;
     backBuffer.height = globalBackBuffer.height;

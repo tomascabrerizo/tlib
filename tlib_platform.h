@@ -15,24 +15,24 @@ typedef void *MemoryReserve(size_t size);
 typedef void MemoryChage(void *ptr, size_t size);
 
 // NOTE: Memory virtual table
-struct Memory
+typedef struct
 {
     MemoryReserve *Reserve;
     MemoryChage *Commit;
     MemoryChage *Decommit;
     MemoryChage *Release;
-};
+} Memory;
 
 Memory PlatformCreateMemory();
 
-struct Arena
+typedef struct
 {
     Memory *platform;
     U8 *memory;
     size_t pos;
     size_t size;
     size_t capacity;
-};
+} Arena;
 
 #define DEFAULT_RESERVE_SIZE GB(1);
 #define DEFAULT_COMMIT_SIZE MB(8);
@@ -41,11 +41,11 @@ Arena CreateArena(Memory* platformMemory);
 void *PushArena(Arena *arena, size_t size);
 void ReleaseArena(Arena *arena);
 
-struct FileRes
+typedef struct
 {
     void *data;
     size_t size;
-};
+} FileRes;
 
 FileRes PlatformReadFile(Arena *arena, char *fileName);
 

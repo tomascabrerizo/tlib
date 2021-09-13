@@ -7,13 +7,13 @@
 #include "tlib_string.h"
 #include "tlib_math.h"
 
-struct Mesh
+typedef struct
 {
     Vertex *vertex;
     U32 vertexCount;
-};
+} Mesh;
 
-struct ObjResult
+typedef struct
 {
     V3F32 *vertex;
     U32 vertexCount;
@@ -24,14 +24,15 @@ struct ObjResult
     U32 *indices;
     U32 *texIndices;
     U32 indicesCout;
-};
+} ObjResult;
 
 inline Mesh LoadObjFile(Arena *arena, char *fileName)
 {
-    ObjResult objResult = {};
+    ObjResult objResult = {0};
     
     // TODO: Allocate memory with PlatformCreateMemory.Reserve instead of create and arena
-    Arena fileArena = CreateArena(&PlatformCreateMemory());
+    Memory memory = PlatformCreateMemory();
+    Arena fileArena = CreateArena(&memory);
     FileRes objFile = PlatformReadFile(&fileArena, fileName);
 
     String objContent = _String((char *)objFile.data);
@@ -127,7 +128,7 @@ inline Mesh LoadObjFile(Arena *arena, char *fileName)
     }
     
     // TODO: Create the final mesh in the destination arena
-    Mesh result = {};
+    Mesh result = {0};
     result.vertexCount = objResult.indicesCout*3;
     result.vertex = (Vertex *)PushArena(arena, result.vertexCount*sizeof(Vertex));
     for(U32 i = 0; i < result.vertexCount; ++i)
