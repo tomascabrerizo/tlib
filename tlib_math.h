@@ -50,8 +50,6 @@ V2F32 _V2F32(F32 x, F32 y);
 V3F32 _V3F32(F32 x, F32 y, F32 z);
 V4F32 _V4F32(F32 x, F32 y, F32 z, F32 w);
 
-// NOTE: Math functions 
-// TODO: Maybe is a good idea to use operator overloading
 // NOTE: Vector Adds
 V2F32 AddV2F32(V2F32 a, V2F32 b);
 V3F32 AddV3F32(V3F32 a, V3F32 b);
@@ -73,7 +71,6 @@ V3F32 DivV3F32(V3F32 a, F32 value);
 V4F32 DivV4F32(V4F32 a, F32 value);
 
 // NOTE: Vector Dot product
-
 F32 DotV2F32(V2F32 a, V2F32 b);
 F32 DotV3F32(V3F32 a, V3F32 b);
 F32 DotV4F32(V4F32 a, V4F32 b);

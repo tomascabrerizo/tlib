@@ -92,8 +92,6 @@ V4F32 _V4F32(F32 x, F32 y, F32 z, F32 w)
     return result;
 }
 
-// NOTE: Math functions 
-// TODO: Maybe is a good idea to use operator overloading
 // NOTE: Vector Adds
 V2F32 AddV2F32(V2F32 a, V2F32 b)
 {

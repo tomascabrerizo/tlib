@@ -64,7 +64,7 @@ typedef struct
     F32 oneOverZStep;
 } Edge;
 
-Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY);
+Edge _Edge(Gradients *gradients, Vertex start, Vertex end, U32 minIndexY);
 void StepEdge(Edge *edge);
 
 void DrawPixel(BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue);

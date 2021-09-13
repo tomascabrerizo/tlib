@@ -65,7 +65,7 @@ Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
 
 // NOTE: Edge functions
 
-Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY)
+Edge _Edge(Gradients *gradients, Vertex start, Vertex end, U32 minIndexY)
 {
     Edge result = {0};
     result.startY = CeilF32I32(start.pos.y);
@@ -82,19 +82,19 @@ Edge _Edge(Gradients gradients, Vertex start, Vertex end, U32 minIndexY)
     F32 xPreStep = result.x - start.pos.x;
     
     // NOTE: Init edge color
-    result.color = AddV4F32(AddV4F32(gradients.color[minIndexY], ScaleV4F32(gradients.colorYStep, yPreStep)),
-                            ScaleV4F32(gradients.colorXStep, xPreStep));
-    result.colorStep = AddV4F32(gradients.colorYStep, ScaleV4F32(gradients.colorXStep, result.xStep));
+    result.color = AddV4F32(AddV4F32(gradients->color[minIndexY], ScaleV4F32(gradients->colorYStep, yPreStep)),
+                            ScaleV4F32(gradients->colorXStep, xPreStep));
+    result.colorStep = AddV4F32(gradients->colorYStep, ScaleV4F32(gradients->colorXStep, result.xStep));
     
     // NOTE: Init edge texCoord 
-    result.texCoord = AddV2F32(AddV2F32(gradients.texCoord[minIndexY], ScaleV2F32(gradients.texCoordYStep, yPreStep)),
-                               ScaleV2F32(gradients.texCoordXStep, xPreStep));
-    result.texCoordStep = AddV2F32(gradients.texCoordYStep, ScaleV2F32(gradients.texCoordXStep, result.xStep));
+    result.texCoord = AddV2F32(AddV2F32(gradients->texCoord[minIndexY], ScaleV2F32(gradients->texCoordYStep, yPreStep)),
+                               ScaleV2F32(gradients->texCoordXStep, xPreStep));
+    result.texCoordStep = AddV2F32(gradients->texCoordYStep, ScaleV2F32(gradients->texCoordXStep, result.xStep));
     
     // NOTE: Init oneOverZ edge
-    result.oneOverZ = gradients.oneOverZ[minIndexY] + (gradients.oneOverZYStep * yPreStep) + 
-                                                      (gradients.oneOverZXStep * xPreStep);
-    result.oneOverZStep = gradients.oneOverZYStep + (gradients.oneOverZXStep * result.xStep);
+    result.oneOverZ = gradients->oneOverZ[minIndexY] + (gradients->oneOverZYStep * yPreStep) + 
+                                                      (gradients->oneOverZXStep * xPreStep);
+    result.oneOverZStep = gradients->oneOverZYStep + (gradients->oneOverZXStep * result.xStep);
 
     return result;
 }
@@ -156,9 +156,9 @@ void ScanTriangle(BackBuffer *buffer, Bitmap *bitmap,
 {
     Gradients gradients = _Gradients(minVert, midVert, maxVert);
 
-    Edge topToBottom = _Edge(gradients, minVert, maxVert, 0);
-    Edge topToMiddle = _Edge(gradients, minVert, midVert, 0);
-    Edge middleToBottom = _Edge(gradients, midVert, maxVert, 1);
+    Edge topToBottom = _Edge(&gradients, minVert, maxVert, 0);
+    Edge topToMiddle = _Edge(&gradients, minVert, midVert, 0);
+    Edge middleToBottom = _Edge(&gradients, midVert, maxVert, 1);
     
     Edge *left = &topToBottom;
     Edge *right = &topToMiddle;

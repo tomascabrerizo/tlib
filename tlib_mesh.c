@@ -87,13 +87,13 @@ Mesh LoadObjFile(Arena *arena, char *fileName)
                 String vertIndex2 = StringSplit(&line, ' ');
                 
                 objResult.indices[indicesCount + 0] = StringToInt(StringSplit(&vertIndex0, '/')); 
-                objResult.texIndices[indicesCount + 0] = StringToFloat(StringSplit(&vertIndex0, '/')); 
+                objResult.texIndices[indicesCount + 0] = StringToInt(StringSplit(&vertIndex0, '/')); 
 
                 objResult.indices[indicesCount + 1] = StringToInt(StringSplit(&vertIndex1, '/')); 
-                objResult.texIndices[indicesCount + 1] = StringToFloat(StringSplit(&vertIndex1, '/')); 
+                objResult.texIndices[indicesCount + 1] = StringToInt(StringSplit(&vertIndex1, '/')); 
 
                 objResult.indices[indicesCount + 2] = StringToInt(StringSplit(&vertIndex2, '/')); 
-                objResult.texIndices[indicesCount + 2] = StringToFloat(StringSplit(&vertIndex2, '/')); 
+                objResult.texIndices[indicesCount + 2] = StringToInt(StringSplit(&vertIndex2, '/')); 
                 
                 indicesCount += 3;
 
@@ -101,7 +101,6 @@ Mesh LoadObjFile(Arena *arena, char *fileName)
         }
     }
     
-    // TODO: Create the final mesh in the destination arena
     Mesh result = {0};
     result.vertexCount = objResult.indicesCout*3;
     result.vertex = (Vertex *)PushArena(arena, result.vertexCount*sizeof(Vertex));
@@ -109,7 +108,6 @@ Mesh LoadObjFile(Arena *arena, char *fileName)
     {
         V3F32 vertex = objResult.vertex[objResult.indices[i]-1];
         result.vertex[i].pos = _V4F32(vertex.x, vertex.y, vertex.z, 1.0f); 
-        // TODO: Get texCoord indices
         result.vertex[i].texCoord = objResult.texCoord[objResult.texIndices[i]-1];
         result.vertex[i].color = _V4F32(1.0f, 0.0f, 0.0f, 1.0f); 
     }

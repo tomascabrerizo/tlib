@@ -11,9 +11,9 @@ typedef struct
     U32 size;
 } String;
 
-inline String _String(char *cstring);
+String _String(char *cstring);
 
-inline void StringPrint(String string);
+void StringPrint(String string);
 
 String StringTrimLeft(String string);
 String StringTrimRight(String string);

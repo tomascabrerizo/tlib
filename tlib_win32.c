@@ -208,8 +208,8 @@ void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starFi
     }
 }
 
-#if 1
-int main(void)
+#if 1 
+int main()
 #else
 INT WINAPI 
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
@@ -218,7 +218,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
     WNDCLASSA windowClass = {0};
     windowClass.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
     windowClass.lpfnWndProc = Win32WindowProc;
-    windowClass.hInstance = 0/*hInstance*/; // TODO: re-enable hInstance
+    windowClass.hInstance = 0/*hInstance*/;
     windowClass.lpszClassName = "tlibWindowClass";
 
     RegisterClassA(&windowClass);
@@ -247,7 +247,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
     QueryPerformanceCounter(&lastTime);
 
     F64 secondsPerFrame = 1.0/30.0;
-
+    
     while(globalRunning)
     {
         MSG message;
@@ -259,7 +259,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         
         Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
 
-        StarFieldUpdateAndRender(&globalBackBuffer, secondsPerFrame, &starField);
+        StarFieldUpdateAndRender(&globalBackBuffer, (F32)secondsPerFrame, &starField);
         GameUpdateAndRender(&backBuffer, (F32)secondsPerFrame);
 
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
@@ -275,6 +275,10 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
             Sleep(sleepTime);
         }
         QueryPerformanceCounter(&currentTime);
+#if 0
+        frameTime = (F64)(currentTime.QuadPart - lastTime.QuadPart) / frequency.QuadPart;
+        printf("sec:%lf FPS:%d\n", frameTime, (U32)(1.0/frameTime));
+#endif
         lastTime = currentTime;
     }
     

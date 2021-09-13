@@ -1,6 +1,6 @@
 #include "tlib_string.h"
 
-inline String _String(char *cstring)
+String _String(char *cstring)
 {
     String result = {0};
     result.data = (I8 *)cstring;
@@ -8,7 +8,7 @@ inline String _String(char *cstring)
     return result;
 }
 
-inline void StringPrint(String string)
+void StringPrint(String string)
 {
     printf("%.*s\n", string.size, string.data);
 }
