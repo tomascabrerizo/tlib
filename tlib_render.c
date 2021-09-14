@@ -17,7 +17,21 @@ Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
     F32 oneOverDX = 1.0f / ((v1.pos.x - v2.pos.x)*(v0.pos.y - v2.pos.y) -
                             (v0.pos.x - v2.pos.x)*(v1.pos.y - v2.pos.y));
     F32 oneOverDY = -oneOverDX;
-   
+    
+    // NOTE: Init Z Depth
+    result.zDepth[0] = v0.pos.z;
+    result.zDepth[1] = v1.pos.z;
+    result.zDepth[2] = v2.pos.z;
+    
+    F32 dZDepthX = ((result.zDepth[1] - result.zDepth[2])*(v0.pos.y - v2.pos.y) -
+                    (result.zDepth[0] - result.zDepth[2])*(v1.pos.y - v2.pos.y));
+
+    F32 dZDepthY = ((result.zDepth[1] - result.zDepth[2])*(v0.pos.x - v2.pos.x) -
+                    (result.zDepth[0] - result.zDepth[2])*(v1.pos.x - v2.pos.x));
+
+    result.zDepthXStep = dZDepthX * oneOverDX;
+    result.zDepthYStep = dZDepthY * oneOverDY;
+
     // NOTE: Init One over Z
     result.oneOverZ[0] = 1.0f / v0.pos.w;
     result.oneOverZ[1] = 1.0f / v1.pos.w;
@@ -93,8 +107,13 @@ Edge _Edge(Gradients *gradients, Vertex start, Vertex end, U32 minIndexY)
     
     // NOTE: Init oneOverZ edge
     result.oneOverZ = gradients->oneOverZ[minIndexY] + (gradients->oneOverZYStep * yPreStep) + 
-                                                      (gradients->oneOverZXStep * xPreStep);
+                                                       (gradients->oneOverZXStep * xPreStep);
     result.oneOverZStep = gradients->oneOverZYStep + (gradients->oneOverZXStep * result.xStep);
+
+    // NOTE: Init Z depth edge
+    result.zDepth = gradients->zDepth[minIndexY] + (gradients->zDepthYStep * yPreStep) + 
+                                                   (gradients->zDepthXStep * xPreStep);
+    result.zDepthStep = gradients->zDepthYStep + (gradients->zDepthXStep * result.xStep);
 
     return result;
 }
@@ -105,6 +124,7 @@ void StepEdge(Edge *edge)
     edge->color = AddV4F32(edge->color, edge->colorStep);
     edge->texCoord = AddV2F32(edge->texCoord, edge->texCoordStep);
     edge->oneOverZ += edge->oneOverZStep;
+    edge->zDepth += edge->zDepthStep;
 }
 
 // NOTE: Rasterizer functions
@@ -121,7 +141,6 @@ void CopyPixelFromBitmap(BackBuffer *buffer, Bitmap *bitmap, U32 x, U32 y, U32 s
     buffer->pixels[y * buffer->width + x] = bitmap->pixels[srcY * bitmap->width + srcX];
 }
 
-
 void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *left, Edge *right, I32 y)
 {
     I32 startX = CeilF32I32(left->x);
@@ -129,25 +148,37 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
 
     F32 xPreStep = (startX - left->x);
     
+    // TODO: Maybe recalculate this coordinates insted of using gradients
     V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
     V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
     F32 minOneOverZ = left->oneOverZ + (gradients->oneOverZXStep * xPreStep);
     
+    F32 xDist = right->x - left->x;
+    F32 depthXStep = (right->zDepth - left->zDepth) / xDist;
+    F32 depth = left->zDepth + (depthXStep * xPreStep);
+    
     for(I32 x = startX; x < endX; ++x)
     {
-        F32 z = 1.0f/minOneOverZ;
+        U32 zIndex = (y*buffer->width+x);
+        if(depth < buffer->zBuffer[zIndex])
+        {
+            buffer->zBuffer[zIndex] = depth;
+            F32 z = 1.0f/minOneOverZ;
 
-        V4F32 color = ScaleV4F32(ScaleV4F32(minColor, z), 255);
-        DrawPixel(buffer, x, y, (U8)color.x, (U8)color.y, (U8)color.z);
-        minColor = AddV4F32(minColor, gradients->colorXStep);
+            V4F32 color = ScaleV4F32(ScaleV4F32(minColor, z), 255);
+            DrawPixel(buffer, x, y, (U8)color.x, (U8)color.y, (U8)color.z);
+            minColor = AddV4F32(minColor, gradients->colorXStep);
 
-        V2F32 srcTexCoord = minTexCoord;
-        U32 srcX = (U32)(Clamp01(srcTexCoord.x*z) * (bitmap->width  - 1) + 0.5f);
-        U32 srcY = (U32)(Clamp01(srcTexCoord.y*z) * (bitmap->height - 1) + 0.5f);
-        
-        CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
+            V2F32 srcTexCoord = minTexCoord;
+            U32 srcX = (U32)(Clamp01(srcTexCoord.x*z) * (bitmap->width  - 1) + 0.5f);
+            U32 srcY = (U32)(Clamp01(srcTexCoord.y*z) * (bitmap->height - 1) + 0.5f);
+            
+            CopyPixelFromBitmap(buffer, bitmap, x, y, srcX, srcY);
+        }
+
         minTexCoord = AddV2F32(minTexCoord, gradients->texCoordXStep);
         minOneOverZ = minOneOverZ + gradients->oneOverZXStep;
+        depth = depth + depthXStep;
     }
 }
 

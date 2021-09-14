@@ -33,7 +33,7 @@ void GameInit(BackBuffer *buffer)
     
     Memory memory = PlatformCreateMemory();
     gameArena = CreateArena(&memory);
-    boxMesh = LoadObjFile(&gameArena, "data/box.obj");   
+    boxMesh = LoadObjFile(&gameArena, "data/monkey.obj");   
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
@@ -51,14 +51,10 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
         v0.pos = MultM4F32V4F32(RotateYM4F32(angle), v0.pos);
         v1.pos = MultM4F32V4F32(RotateYM4F32(angle), v1.pos);
         v2.pos = MultM4F32V4F32(RotateYM4F32(angle), v2.pos);
-        //
-        //v0.pos = MultM4F32V4F32(RotateZM4F32(angle), v0.pos);
-        //v1.pos = MultM4F32V4F32(RotateZM4F32(angle), v1.pos);
-        //v2.pos = MultM4F32V4F32(RotateZM4F32(angle), v2.pos);
         
-        v0.pos = MultM4F32V4F32(RotateXM4F32(angle), v0.pos);
-        v1.pos = MultM4F32V4F32(RotateXM4F32(angle), v1.pos);
-        v2.pos = MultM4F32V4F32(RotateXM4F32(angle), v2.pos);
+        //v0.pos = MultM4F32V4F32(RotateXM4F32(angle), v0.pos);
+        //v1.pos = MultM4F32V4F32(RotateXM4F32(angle), v1.pos);
+        //v2.pos = MultM4F32V4F32(RotateXM4F32(angle), v2.pos);
 
         // NOTE: Translate the box
         v0.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 5)), v0.pos);

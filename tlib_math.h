@@ -22,7 +22,6 @@ F32 SquareRootF32(F32 value);
 F32 Lerp(F32 a, F32 b, F32 t);
 
 // NOTE: Vectors structs
-
 typedef struct
 {
     F32 x;
@@ -45,7 +44,6 @@ typedef struct
 } V4F32;
 
 // NOTE: _Funtions are constructors for structs
-
 V2F32 _V2F32(F32 x, F32 y);
 V3F32 _V3F32(F32 x, F32 y, F32 z);
 V4F32 _V4F32(F32 x, F32 y, F32 z, F32 w);

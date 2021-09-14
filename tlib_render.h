@@ -9,6 +9,8 @@ typedef struct
     U32 *pixels;
     U32 width;
     U32 height;
+    
+    F32 *zBuffer;
 } BackBuffer;
 
 typedef struct
@@ -18,7 +20,6 @@ typedef struct
     U32 height;
 } Bitmap;
 
-// TODO: Maybe have Vertex and screenVertex
 typedef struct
 {
     V4F32 pos;
@@ -27,31 +28,39 @@ typedef struct
 } Vertex;
 
 Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v);
+
 typedef struct {
     // NOTE: Color gradients
     V4F32 color[3];
     V4F32 colorXStep;
     V4F32 colorYStep;
+    
     // NOTE: TexCoord gradients
-    // TODO: Maybe call texCoordUStep and texCoordVStep
     V2F32 texCoord[3];
     V2F32 texCoordXStep;
     V2F32 texCoordYStep;
 
+    // NOTE: One over Z gradients
     F32 oneOverZ[3];
     F32 oneOverZXStep;
     F32 oneOverZYStep;
+    
+    // NOTE: Z deph gradients
+    F32 zDepth[3];
+    F32 zDepthXStep;
+    F32 zDepthYStep;
 } Gradients;
 
 Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2);
 
 typedef struct
 {
-    F32 x;
-    F32 xStep;
-
     I32 startY;
     I32 endY;
+    
+    // NOTE: Edge X pos 
+    F32 x;
+    F32 xStep;
     
     // NOTE: Edge color
     V4F32 color;
@@ -60,8 +69,13 @@ typedef struct
     V2F32 texCoord;
     V2F32 texCoordStep;
 
+    // NOTE: Edge One over Z
     F32 oneOverZ;
     F32 oneOverZStep;
+
+    // NOTE: Edge Z deph
+    F32 zDepth;
+    F32 zDepthStep;
 } Edge;
 
 Edge _Edge(Gradients *gradients, Vertex start, Vertex end, U32 minIndexY);

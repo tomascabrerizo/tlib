@@ -14,8 +14,6 @@
 #define WINDOW_HEIGHT 600
 
 // NOTE: Platform code
-
-
 void *Win32MemoryReserve(size_t size)
 {   
     void *result = VirtualAlloc(0, size, MEM_RESERVE, PAGE_READWRITE);
@@ -148,7 +146,6 @@ Win32WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 // TODO: Remove star field from the platform layer
-
 void StarFieldInit(StarField *starField)
 {
     for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
@@ -208,6 +205,15 @@ void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starFi
     }
 }
 
+// TODO: Create a good way to create and clear zBuffer
+void Win32ClearZBuffer(BackBuffer *buffer)
+{
+    for(U32 i = 0; i < buffer->width*buffer->height; ++i)
+    {
+        buffer->zBuffer[i] = 9999999999.0f;
+    }
+}
+
 #if 1 
 int main()
 #else
@@ -234,6 +240,9 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
     backBuffer.pixels = globalBackBuffer.pixels;
     backBuffer.width = globalBackBuffer.width;
     backBuffer.height = globalBackBuffer.height;
+    // TODO: Maybe the game should allocate the z buffer
+    size_t zBufferSize = (backBuffer.width*backBuffer.height*sizeof(F32));
+    backBuffer.zBuffer = VirtualAlloc(0, zBufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
     
     StarField starField;
     StarFieldInit(&starField);
@@ -258,6 +267,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
         }
         
         Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
+        Win32ClearZBuffer(&backBuffer);
 
         StarFieldUpdateAndRender(&globalBackBuffer, (F32)secondsPerFrame, &starField);
         GameUpdateAndRender(&backBuffer, (F32)secondsPerFrame);

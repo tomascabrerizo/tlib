@@ -35,7 +35,6 @@ F32 TanF32(F32 angle)
 }
 
 // NOTE: Common math funtions
-
 I32 CeilF32I32(F32 value)
 {
     I32 result = (I32)ceilf(value);
@@ -69,7 +68,6 @@ F32 Lerp(F32 a, F32 b, F32 t)
 }
 
 // NOTE: _Funtions are constructors for structs
-
 V2F32 _V2F32(F32 x, F32 y)
 {
     V2F32 result = {x, y};
@@ -165,7 +163,6 @@ V4F32 DivV4F32(V4F32 a, F32 value)
 }
 
 // NOTE: Vector Dot product
-
 F32 DotV2F32(V2F32 a, V2F32 b)
 {
     F32 result = (a.x * b.x + a.y * b.y);
@@ -240,7 +237,6 @@ F32 LenghtV4F32(V4F32 a)
 }
 
 // NOTE: Vector Lerp functions
-
 V2F32 LerpV2F32(V2F32 a, V2F32 b, F32 t)
 {
     V2F32 result = AddV2F32(a, ScaleV2F32(SubV2F32(b, a), t));
@@ -260,7 +256,6 @@ V4F32 LerpV4F32(V4F32 a, V4F32 b, F32 t)
 }
 
 // NOTE: Matrix functions 
-
 M4F32 MultM4F32(M4F32 a, M4F32 b)
 {
     M4F32 result = {0};
