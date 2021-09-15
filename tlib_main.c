@@ -3,6 +3,7 @@
 #include "tlib_string.h"
 #include "tlib_render.h"
 #include "tlib_mesh.h"
+#include "tlib_darray.h"
 
 #define NUMBER_OF_STARS 512
 
@@ -123,10 +124,32 @@ void GameInit(BackBuffer *buffer)
     testMesh = LoadObjFile(&gameArena, "data/monkey.obj");   
 
     StarFieldInit(&gameStarField);
+    
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
 {
+
+    // NOTE: Dynamic array test
+    {
+        V3F32 *vertices = 0;
+        for(U32 i = 0; i < 100; ++i)
+        {
+            V3F32 *vertex = (V3F32 *)DArrayPush(&vertices, sizeof(V3F32));
+            *vertex = _V3F32(RandomF32(), RandomF32(), RandomF32());
+            int breakHere = 0;
+            (void)breakHere;
+        }
+#if 0
+        for(U32 i = 0; i < DArraySize(vertices)/sizeof(V3F32); ++i)
+        {
+            printf("%d) (x:%f, y:%f, z:%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z); 
+        }
+#endif   
+        DArrayRelease(&vertices);
+    }
+
+
     // NOTE: Clear the render buffers each frame
     ClearBackBuffer(buffer, 0x00, 0x00, 0x00);
     ClearZBuffer(buffer);
