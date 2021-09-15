@@ -97,6 +97,10 @@ void Win32CreateBackBuffer(HWND window, HDC deviceContext, Win32BackBuffer *buff
     // NOTE: Create a compatible device context to be able to blit it on window
     buffer->bufferDC = CreateCompatibleDC(deviceContext);
     SelectObject(buffer->bufferDC, buffer->bitmap);
+
+    // NOTE: Alloc memory for the z buffer
+    size_t zBufferSize = (buffer->width*buffer->height*sizeof(F32));
+    buffer->zBuffer = (F32 *)VirtualAlloc(0, zBufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 }
 
 void Win32BlitBackBuffer(HDC destDC, Win32BackBuffer *buffer)
@@ -145,75 +149,6 @@ Win32WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     return result;
 }
 
-// TODO: Remove star field from the platform layer
-void StarFieldInit(StarField *starField)
-{
-    for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
-    {
-        // NOTE: The coordinates are normallize to -1 to 1
-        starField->pos[index].x = (RandomF32() - 0.5f) * 2;
-        starField->pos[index].y = (RandomF32() - 0.5f) * 2;
-        starField->pos[index].z = (RandomF32() - 0.5f) * 2;
-        
-        // NOTE: Color are from 0 to 1 
-        starField->color[index].x = RandomF32();
-        starField->color[index].y = RandomF32();
-        starField->color[index].z = RandomF32();
-    }
-}
-
-void StarFieldUpdateAndRender(Win32BackBuffer *buffer, F32 dt, StarField *starField)
-{
-    // NOTE: Project coordinate to the buffer width and height
-    U32 halfBufferWidht = (U32)(0.5f*buffer->width);
-    U32 halfBufferHeight = (U32)(0.5f*buffer->height);
-    for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
-    {
-        // NOTE: Update Star
-        starField->pos[index].z -= dt;
-
-        // NOTE: Render Star
-        if(starField->pos[index].z <= 0)
-        {
-            starField->pos[index].x = (RandomF32() - 0.5f) * 2;
-            starField->pos[index].y = (RandomF32() - 0.5f) * 2;
-            starField->pos[index].z = (RandomF32() - 0.5f) * 2;
-        }
-        else
-        {
-            // NOTE: Project Star into screen space
-            F32 z = starField->pos[index].z;
-            I32 screenX = (I32)((starField->pos[index].x/z * halfBufferWidht) + halfBufferWidht);
-            I32 screenY = (I32)((starField->pos[index].y/z * halfBufferHeight) + halfBufferHeight);
-            
-            if(screenX < 0 || screenX >= (I32)buffer->width || 
-               screenY < 0 || screenY >= (I32)buffer->height)
-            {
-                starField->pos[index].x = (RandomF32() - 0.5f) * 2;
-                starField->pos[index].y = (RandomF32() - 0.5f) * 2;
-                starField->pos[index].z = (RandomF32() - 0.5f) * 2;
-            }
-            else
-            {
-                // NOTE: Map color from 0 to 1 to 127 to 255
-                U8 red =   (U8)(starField->color[index].x * 127 + 128);
-                U8 green = (U8)(starField->color[index].y * 127 + 128);
-                U8 blue =  (U8)(starField->color[index].z * 127 + 128);
-                Win32DrawPixel(buffer, screenX, screenY, red, green, blue); 
-            }
-        }
-    }
-}
-
-// TODO: Create a good way to create and clear zBuffer
-void Win32ClearZBuffer(BackBuffer *buffer)
-{
-    for(U32 i = 0; i < buffer->width*buffer->height; ++i)
-    {
-        buffer->zBuffer[i] = 9999999999.0f;
-    }
-}
-
 #if 1 
 int main()
 #else
@@ -240,12 +175,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
     backBuffer.pixels = globalBackBuffer.pixels;
     backBuffer.width = globalBackBuffer.width;
     backBuffer.height = globalBackBuffer.height;
-    // TODO: Maybe the game should allocate the z buffer
-    size_t zBufferSize = (backBuffer.width*backBuffer.height*sizeof(F32));
-    backBuffer.zBuffer = VirtualAlloc(0, zBufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+    backBuffer.zBuffer = globalBackBuffer.zBuffer; 
     
-    StarField starField;
-    StarFieldInit(&starField);
     GameInit(&backBuffer);
    
     globalRunning = true;
@@ -266,12 +197,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdSh
             DispatchMessageA(&message); 
         }
         
-        Win32ClearBackBuffer(&globalBackBuffer, 0x00, 0x00, 0x00);
-        Win32ClearZBuffer(&backBuffer);
-
-        StarFieldUpdateAndRender(&globalBackBuffer, (F32)secondsPerFrame, &starField);
         GameUpdateAndRender(&backBuffer, (F32)secondsPerFrame);
-
         Win32BlitBackBuffer(globalWindowDC, &globalBackBuffer);
         
         // NOTE: Fix game time step

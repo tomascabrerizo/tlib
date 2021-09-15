@@ -4,6 +4,14 @@
 #include "tlib_render.h"
 #include "tlib_mesh.h"
 
+#define NUMBER_OF_STARS 512
+
+typedef struct
+{
+    V3F32 pos[NUMBER_OF_STARS];
+    V3F32 color[NUMBER_OF_STARS];
+} StarField;
+
 static M4F32 projection;
 
 #define BITMAP_WIDTH 32 
@@ -12,6 +20,85 @@ static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
 static Arena gameArena;
 static Mesh boxMesh;
+static StarField gameStarField;
+
+void StarFieldInit(StarField *starField)
+{
+    for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
+    {
+        // NOTE: The coordinates are normallize to -1 to 1
+        starField->pos[index].x = (RandomF32() - 0.5f) * 2;
+        starField->pos[index].y = (RandomF32() - 0.5f) * 2;
+        starField->pos[index].z = (RandomF32() - 0.5f) * 2;
+        
+        // NOTE: Color are from 0 to 1 
+        starField->color[index].x = RandomF32();
+        starField->color[index].y = RandomF32();
+        starField->color[index].z = RandomF32();
+    }
+}
+
+void StarFieldUpdateAndRender(BackBuffer *buffer, F32 dt, StarField *starField)
+{
+    // NOTE: Project coordinate to the buffer width and height
+    U32 halfBufferWidht = (U32)(0.5f*buffer->width);
+    U32 halfBufferHeight = (U32)(0.5f*buffer->height);
+    for(I32 index = 0; index < ArrayCount(starField->pos); ++index)
+    {
+        // NOTE: Update Star
+        starField->pos[index].z -= dt;
+
+        // NOTE: Render Star
+        if(starField->pos[index].z <= 0)
+        {
+            starField->pos[index].x = (RandomF32() - 0.5f) * 2;
+            starField->pos[index].y = (RandomF32() - 0.5f) * 2;
+            starField->pos[index].z = (RandomF32() - 0.5f) * 2;
+        }
+        else
+        {
+            // NOTE: Project Star into screen space
+            F32 z = starField->pos[index].z;
+            I32 screenX = (I32)((starField->pos[index].x/z * halfBufferWidht) + halfBufferWidht);
+            I32 screenY = (I32)((starField->pos[index].y/z * halfBufferHeight) + halfBufferHeight);
+            
+            if(screenX < 0 || screenX >= (I32)buffer->width || 
+               screenY < 0 || screenY >= (I32)buffer->height)
+            {
+                starField->pos[index].x = (RandomF32() - 0.5f) * 2;
+                starField->pos[index].y = (RandomF32() - 0.5f) * 2;
+                starField->pos[index].z = (RandomF32() - 0.5f) * 2;
+            }
+            else
+            {
+                // NOTE: Map color from 0 to 1 to 127 to 255
+                U8 red =   (U8)(starField->color[index].x * 127 + 128);
+                U8 green = (U8)(starField->color[index].y * 127 + 128);
+                U8 blue =  (U8)(starField->color[index].z * 127 + 128);
+                DrawPixel(buffer, screenX, screenY, red, green, blue); 
+            }
+        }
+    }
+}
+
+
+void ClearBackBuffer(BackBuffer *buffer, U8 red, U8 green, U8 blue)
+{
+    U32 color = ((U32)red << 16)|((U32)green << 8)|((U32)blue << 0);
+    for(U32 index = 0; index < buffer->width*buffer->height; ++index)
+    {
+        buffer->pixels[index] = color;
+    }
+}
+
+void ClearZBuffer(BackBuffer *buffer)
+{
+    for(U32 i = 0; i < buffer->width*buffer->height; ++i)
+    {
+        // NOTE: Should be a number greater than 1
+        buffer->zBuffer[i] = 10.0f;
+    }
+}
 
 void GameInit(BackBuffer *buffer)
 {
@@ -34,10 +121,18 @@ void GameInit(BackBuffer *buffer)
     Memory memory = PlatformCreateMemory();
     gameArena = CreateArena(&memory);
     boxMesh = LoadObjFile(&gameArena, "data/monkey.obj");   
+
+    StarFieldInit(&gameStarField);
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
 {
+    // NOTE: Clear the render buffers each fram
+    ClearBackBuffer(buffer, 0x00, 0x00, 0x00);
+    ClearZBuffer(buffer);
+
+    StarFieldUpdateAndRender(buffer, dt, &gameStarField);
+
     // NOTE: 3D complete transform from local space to screen space
     // TODO: Create a render mesh funtions
     static F32 angle = 0.0f;
