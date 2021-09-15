@@ -149,13 +149,16 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
     F32 xPreStep = (startX - left->x);
     
     // TODO: Maybe recalculate this coordinates insted of using gradients
-    V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
-    V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
-    F32 minOneOverZ = left->oneOverZ + (gradients->oneOverZXStep * xPreStep);
-    
+#if 0 
     F32 xDist = right->x - left->x;
     F32 depthXStep = (right->zDepth - left->zDepth) / xDist;
     F32 depth = left->zDepth + (depthXStep * xPreStep);
+#else
+    V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
+    V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
+    F32 minOneOverZ = left->oneOverZ + (gradients->oneOverZXStep * xPreStep);
+    F32 depth = left->zDepth + (gradients->zDepthXStep * xPreStep);
+#endif
     
     for(I32 x = startX; x < endX; ++x)
     {
@@ -178,7 +181,7 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
 
         minTexCoord = AddV2F32(minTexCoord, gradients->texCoordXStep);
         minOneOverZ = minOneOverZ + gradients->oneOverZXStep;
-        depth = depth + depthXStep;
+        depth = depth + gradients->zDepthXStep;
     }
 }
 
@@ -287,6 +290,7 @@ V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
     
     I32 halfWidth = (I32)(0.5f*buffer->width);
     I32 halfHeight = (I32)(0.5f*buffer->height);
+    
     
     if(v.w != 0)
     {

@@ -17,7 +17,7 @@ void GameInit(BackBuffer *buffer)
 {
     // NOTE: Init projection matrix
     F32 aspect = (F32)buffer->width / (F32)buffer->height;
-    projection = PerspectiveM4F32(60, aspect, 0, 100);
+    projection = PerspectiveM4F32(60, aspect, 0.1f, 1000.0f);
 
     // NOTE: Init random bitmap
     randomBitmap.width = BITMAP_WIDTH;
