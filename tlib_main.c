@@ -19,7 +19,7 @@ static M4F32 projection;
 static Bitmap randomBitmap;
 static U32 bitmapData[BITMAP_WIDTH*BITMAP_WIDTH];
 static Arena gameArena;
-static Mesh boxMesh;
+static Mesh testMesh;
 static StarField gameStarField;
 
 void StarFieldInit(StarField *starField)
@@ -120,14 +120,14 @@ void GameInit(BackBuffer *buffer)
     
     Memory memory = PlatformCreateMemory();
     gameArena = CreateArena(&memory);
-    boxMesh = LoadObjFile(&gameArena, "data/monkey.obj");   
+    testMesh = LoadObjFile(&gameArena, "data/monkey.obj");   
 
     StarFieldInit(&gameStarField);
 }
 
 void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
 {
-    // NOTE: Clear the render buffers each fram
+    // NOTE: Clear the render buffers each frame
     ClearBackBuffer(buffer, 0x00, 0x00, 0x00);
     ClearZBuffer(buffer);
 
@@ -136,11 +136,11 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
     // NOTE: 3D complete transform from local space to screen space
     // TODO: Create a render mesh funtions
     static F32 angle = 0.0f;
-    for(U32 i = 0; i < boxMesh.vertexCount; i += 3)
+    for(U32 i = 0; i < testMesh.vertexCount; i += 3)
     {
-        Vertex v0 = boxMesh.vertex[i + 0]; 
-        Vertex v1 = boxMesh.vertex[i + 1];
-        Vertex v2 = boxMesh.vertex[i + 2];
+        Vertex v0 = testMesh.vertex[i + 0]; 
+        Vertex v1 = testMesh.vertex[i + 1];
+        Vertex v2 = testMesh.vertex[i + 2];
 
         // NOTE: Rotate the box
         v0.pos = MultM4F32V4F32(RotateYM4F32(angle), v0.pos);

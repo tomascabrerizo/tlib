@@ -233,6 +233,38 @@ void ScanTriangle(BackBuffer *buffer, Bitmap *bitmap,
     }
 }
 
+Vertex *ClipTriangle(Vertex v0, Vertex v1, Vertex v2, U32 *numVertex)
+{
+    (void)numVertex;
+    
+    Vertex *result = 0;
+    // NOTE: Clip triangle on x
+    if(v0.pos.x < -v0.pos.w)
+    {
+        F32 tx01 = (v0.pos.w - v0.pos.x) / ((v0.pos.w - v0.pos.x) - (v1.pos.w - v1.pos.x));
+        F32 tx02 = (v0.pos.w - v0.pos.x) / ((v0.pos.w - v0.pos.x) - (v2.pos.w - v2.pos.x));
+        F32 ty01 = (v0.pos.w - v0.pos.y) / ((v0.pos.w - v0.pos.y) - (v1.pos.w - v1.pos.y));
+        F32 ty02 = (v0.pos.w - v0.pos.y) / ((v0.pos.w - v0.pos.y) - (v2.pos.w - v2.pos.y));
+        
+        if(tx01 >= 0 && tx01 <= 1)
+        {
+            F32 newX = Lerp(v0.pos.x, v1.pos.x, tx01);
+            F32 newY = Lerp(v0.pos.y, v1.pos.y, ty01);
+            (void)newX;
+            (void)newY;
+        }
+        if(tx02 >= 0 && tx02 <= 1)
+        {
+            F32 newX = Lerp(v0.pos.x, v2.pos.x, tx02);
+            F32 newY = Lerp(v0.pos.y, v2.pos.y, ty02);
+            (void)newX;
+            (void)newY;
+        }
+    }
+
+    return result;
+}
+
 void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2)
 {
     Vertex minVert = v0; 
@@ -288,16 +320,15 @@ V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
 {
     V4F32 result = _V4F32(v.x, v.y, v.z, v.w);
     
-    I32 halfWidth = (I32)(0.5f*buffer->width);
-    I32 halfHeight = (I32)(0.5f*buffer->height);
-    
-    
     if(v.w != 0)
     {
         result.x /= result.w;
         result.y /= result.w;
         result.z /= result.w;
     }
+    
+    I32 halfWidth = (I32)(0.5f*buffer->width);
+    I32 halfHeight = (I32)(0.5f*buffer->height);
     
     result.x = (result.x*halfWidth) + halfWidth;
     result.y = (result.y*-halfHeight) + halfHeight;

@@ -11,6 +11,8 @@
 #define MB(value) (KB(value)*1024LL)
 #define GB(value) (MB(value)*1024LL)
 
+
+// TODO: Remove Memory struct
 typedef void *MemoryReserve(size_t size);
 typedef void MemoryChage(void *ptr, size_t size);
 
@@ -24,6 +26,9 @@ typedef struct
 } Memory;
 
 Memory PlatformCreateMemory(void);
+
+void * PlatformAllocMemory(size_t size);
+void PlatformReleaseMemory(void *memory);
 
 typedef struct
 {

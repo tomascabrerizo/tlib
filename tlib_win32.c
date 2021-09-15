@@ -8,6 +8,7 @@
 #include "tlib_types.h"
 #include "tlib_math.h"
 #include "tlib_platform.h"
+#include "tlib_darray.h"
 #include "tlib_win32.h"
 
 #define WINDOW_WIDTH 800 
@@ -43,6 +44,17 @@ Memory PlatformCreateMemory(void)
     result.Decommit = Win32MemoryDecommit;
     result.Release = Win32MemoryRelease;
     return result;
+}
+
+void *PlatformAllocMemory(size_t size)
+{
+    void *result = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+    return result;
+}
+
+void PlatformReleaseMemory(void *memory)
+{
+    VirtualFree(memory, 0, MEM_DECOMMIT|MEM_RELEASE);
 }
 
 FileRes PlatformReadFile(Arena *arena, char *fileName)
