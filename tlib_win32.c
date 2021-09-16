@@ -52,12 +52,14 @@ void *PlatformAllocMemory(size_t size)
     return result;
 }
 
-void PlatformReleaseMemory(void *memory)
+void PlatformReleaseMemory(void *memory, size_t size)
 {
-    VirtualFree(memory, 0, MEM_DECOMMIT|MEM_RELEASE);
+    // TODO: Remove size parameter from this funtion
+    (void)size;
+    VirtualFree(memory, 0, MEM_RELEASE);
 }
 
-FileRes PlatformReadFile(Arena *arena, char *fileName)
+FileRes PlatformReadFile(char *fileName)
 {
     FileRes result = {0};
     HANDLE fileHandle = CreateFileA(fileName, GENERIC_READ, 
@@ -70,7 +72,7 @@ FileRes PlatformReadFile(Arena *arena, char *fileName)
         LARGE_INTEGER fileSize = {0};
         GetFileSizeEx(fileHandle, &fileSize);
         result.size = fileSize.QuadPart;
-        result.data = PushArena(arena, result.size);
+        result.data = VirtualAlloc(0, result.size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
         ReadFile(fileHandle, result.data, (DWORD)result.size, 0, 0);
     }
     else
@@ -79,6 +81,13 @@ FileRes PlatformReadFile(Arena *arena, char *fileName)
     }
     CloseHandle(fileHandle);
     return result;
+}
+
+void PlatformFreeFile(FileRes *fileRes)
+{
+    VirtualFree(fileRes->data, 0, MEM_RELEASE);
+    fileRes->data = 0;
+    fileRes->size = 0;
 }
 
 // NOTE: Win32 Code

@@ -3,39 +3,43 @@
 
 #include <string.h>
 
-#define DArraySizePtr(dArray) (((size_t *)(dArray)) - 2)
-#define DArrayCapPtr(dArray)  (((size_t *)(dArray)) - 1)
+#define DArrayCapPtr(dArray)  (((size_t *)(dArray)) - 2)
+#define DArraySizePtr(dArray) (((size_t *)(dArray)) - 1)
 
-size_t DArraySize(void *dArray)
+#define DArrayPush(array, type) (type *)DArrayPush_(array, sizeof(type))
+#define DArraySize(array, type) (type *)(DArraySize_(array) / sizeof(type))
+
+size_t DArraySize_(void *dArray)
 {
     return *DArraySizePtr(dArray);
 }
 
-void *DArrayPush(void **dArray, size_t size)
+void *DArrayPush_(void **dArray, size_t size)
 {
     if(!*dArray)
     {
         size_t capacity = (sizeof(size_t)*2)+(size*2);
         *dArray = PlatformAllocMemory(capacity);
-        *dArray = ((U8 *)*dArray) + (sizeof(size_t)*2);
+        *dArray = ((size_t *)(*dArray) + 2);
 
         *DArrayCapPtr(*dArray) = capacity;
         *DArraySizePtr(*dArray) = size;
         return *dArray;
     }
-    else if((*DArraySizePtr(*dArray) + size) >= *DArrayCapPtr(*dArray))
+    else if((*DArraySizePtr(*dArray) + size) >= (*DArrayCapPtr(*dArray)- sizeof(size_t)*2))
     {
         size_t dArraySize = *DArraySizePtr(*dArray);
-        void *oldMem = ((U8 *)*dArray) - (sizeof(size_t)*2);
+        void *oldMem = ((size_t *)(*dArray) - 2);
         
         // NOTE: Allocate a bigger array and copy the old in the new one
         size_t newCapacity = (sizeof(size_t)*2)+dArraySize*2;
         void * newDArray = PlatformAllocMemory(newCapacity);
-        newDArray = ((U8 *)newDArray) + (sizeof(size_t)*2);
+        newDArray = ((size_t *)newDArray + 2);
+        
         memcpy(newDArray, *dArray, dArraySize);
         *dArray = newDArray;
         // NOTE: Release the old array
-        PlatformReleaseMemory(oldMem);
+        PlatformReleaseMemory(oldMem, *((size_t *)oldMem));
         
         void *result = (U8 *)(*dArray) + dArraySize;
 
@@ -55,8 +59,9 @@ void *DArrayPush(void **dArray, size_t size)
 
 void DArrayRelease(void **dArray)
 {
-    void *mem = ((U8 *)(*dArray)) - (sizeof(size_t)*2);
-    PlatformReleaseMemory(mem);
+    void *mem = ((size_t *)(*dArray) - 2);
+    size_t capacity = (*(size_t *)mem);
+    PlatformReleaseMemory(mem, capacity);
     *dArray = 0;
 }
 

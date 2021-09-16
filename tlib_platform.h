@@ -28,7 +28,7 @@ typedef struct
 Memory PlatformCreateMemory(void);
 
 void * PlatformAllocMemory(size_t size);
-void PlatformReleaseMemory(void *memory);
+void PlatformReleaseMemory(void *memory, size_t size);
 
 typedef struct
 {
@@ -52,7 +52,8 @@ typedef struct
     size_t size;
 } FileRes;
 
-FileRes PlatformReadFile(Arena *arena, char *fileName);
+FileRes PlatformReadFile(char *fileName);
+void PlatformFreeFile(FileRes *fileRes);
 
 // NOTE: Functions that platform need to use 
 void GameInit(BackBuffer *backBuffer);
