@@ -175,7 +175,7 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
     F32 depthXStep = (right->zDepth - left->zDepth) / xDist;
     F32 depth = left->zDepth + (depthXStep * xPreStep);
 #else
-    V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
+    // V4F32 minColor = AddV4F32(left->color, ScaleV4F32(gradients->colorXStep, xPreStep));
     V2F32 minTexCoord = AddV2F32(left->texCoord, ScaleV2F32(gradients->texCoordXStep, xPreStep));
     F32 minOneOverZ = left->oneOverZ + (gradients->oneOverZXStep * xPreStep);
     F32 depth = left->zDepth + (gradients->zDepthXStep * xPreStep);
@@ -189,9 +189,12 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
             buffer->zBuffer[zIndex] = depth;
             F32 z = 1.0f/minOneOverZ;
 
+            // TODO: Add render modes, texture or color
+#if 0
             V4F32 color = ScaleV4F32(ScaleV4F32(minColor, z), 255);
             DrawPixel(buffer, x, y, (U8)color.x, (U8)color.y, (U8)color.z);
             minColor = AddV4F32(minColor, gradients->colorXStep);
+#endif
 
             V2F32 srcTexCoord = minTexCoord;
             U32 srcX = (U32)(Clamp01(srcTexCoord.x*z) * (bitmap->width  - 1) + 0.5f);
