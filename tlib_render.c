@@ -17,6 +17,18 @@ Vertex VertexLerp(Vertex v0, Vertex v1, F32 t)
    return result;
 }
 
+B8 VertexIsInside3DFrustum(Vertex vertex)
+{
+    B8 result = false;
+    if((AbsF32(vertex.pos.x) <= AbsF32(vertex.pos.w)) &&
+       (AbsF32(vertex.pos.y) <= AbsF32(vertex.pos.w)) &&
+       (AbsF32(vertex.pos.z) <= AbsF32(vertex.pos.w)))
+    {
+        result = true;
+    }
+    return result;
+}
+
 // NOTE: Gradients functions
 
 Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
@@ -375,6 +387,14 @@ void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vert
 
 void DrawTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2)
 {
+    if(VertexIsInside3DFrustum(v0) &&
+       VertexIsInside3DFrustum(v1) &&
+       VertexIsInside3DFrustum(v2))
+    {
+        FillTriangle(buffer, bitmap, v0, v1, v2);
+        return;
+    }
+
     VertexList vertexList = {0};
     VertexList tmpList = {0};
     

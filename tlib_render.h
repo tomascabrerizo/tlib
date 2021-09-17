@@ -29,6 +29,7 @@ typedef struct
 
 Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v);
 Vertex VertexLerp(Vertex v0, Vertex v1, F32 t);
+B8 VertexIsInside3DFrustum(Vertex vertex);
 
 typedef struct {
     // NOTE: Color gradients

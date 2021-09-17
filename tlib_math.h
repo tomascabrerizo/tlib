@@ -20,6 +20,7 @@ I32 CeilF32I32(F32 value);
 F32 Clamp01(F32 num);
 F32 SquareRootF32(F32 value);
 F32 Lerp(F32 a, F32 b, F32 t);
+F32 AbsF32(F32 num);
 
 // NOTE: Vectors structs
 typedef struct

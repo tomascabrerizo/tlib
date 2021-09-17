@@ -55,6 +55,12 @@ F32 Clamp01(F32 num)
 
 }
 
+F32 AbsF32(F32 num)
+{
+    F32 result = fabsf(num);
+    return result;
+}
+
 F32 SquareRootF32(F32 value)
 {
     F32 result = sqrtf(value);
