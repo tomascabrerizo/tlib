@@ -48,6 +48,9 @@ V2F32 _V2F32(F32 x, F32 y);
 V3F32 _V3F32(F32 x, F32 y, F32 z);
 V4F32 _V4F32(F32 x, F32 y, F32 z, F32 w);
 
+// NOTE: Simples getters
+F32 GetAxisV4F32(V4F32 v, U32 axis);
+
 // NOTE: Vector Adds
 V2F32 AddV2F32(V2F32 a, V2F32 b);
 V3F32 AddV3F32(V3F32 a, V3F32 b);

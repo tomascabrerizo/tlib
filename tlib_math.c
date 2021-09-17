@@ -86,6 +86,19 @@ V4F32 _V4F32(F32 x, F32 y, F32 z, F32 w)
     return result;
 }
 
+// NOTE: Simple getters
+F32 GetAxisV4F32(V4F32 v, U32 axis)
+{
+    switch(axis)
+    {
+        case 0: return v.x;
+        case 1: return v.y;
+        case 2: return v.z;
+        case 3: return v.w;
+    }
+    return -1;
+}
+
 // NOTE: Vector Adds
 V2F32 AddV2F32(V2F32 a, V2F32 b)
 {

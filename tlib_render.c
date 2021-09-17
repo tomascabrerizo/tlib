@@ -8,6 +8,15 @@ Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v)
     return result;
 }
 
+Vertex VertexLerp(Vertex v0, Vertex v1, F32 t)
+{
+   Vertex result = {0};
+   result.pos = LerpV4F32(v0.pos, v1.pos, t); 
+   result.color = LerpV4F32(v0.color, v1.color, t); 
+   result.texCoord = LerpV2F32(v0.texCoord, v1.texCoord, t); 
+   return result;
+}
+
 // NOTE: Gradients functions
 
 Gradients _Gradients(Vertex v0, Vertex v1, Vertex v2)
@@ -233,36 +242,84 @@ void ScanTriangle(BackBuffer *buffer, Bitmap *bitmap,
     }
 }
 
-Vertex *ClipTriangle(Vertex v0, Vertex v1, Vertex v2, U32 *numVertex)
+void CopyVertexList(VertexList *dest, VertexList *src)
 {
-    (void)numVertex;
-    
-    Vertex *result = 0;
-    // NOTE: Clip triangle on x
-    if(v0.pos.x < -v0.pos.w)
+    dest->count = src->count;
+    for(U32 i = 0; i < dest->count; ++i)
     {
-        F32 tx01 = (v0.pos.w - v0.pos.x) / ((v0.pos.w - v0.pos.x) - (v1.pos.w - v1.pos.x));
-        F32 tx02 = (v0.pos.w - v0.pos.x) / ((v0.pos.w - v0.pos.x) - (v2.pos.w - v2.pos.x));
-        F32 ty01 = (v0.pos.w - v0.pos.y) / ((v0.pos.w - v0.pos.y) - (v1.pos.w - v1.pos.y));
-        F32 ty02 = (v0.pos.w - v0.pos.y) / ((v0.pos.w - v0.pos.y) - (v2.pos.w - v2.pos.y));
-        
-        if(tx01 >= 0 && tx01 <= 1)
-        {
-            F32 newX = Lerp(v0.pos.x, v1.pos.x, tx01);
-            F32 newY = Lerp(v0.pos.y, v1.pos.y, ty01);
-            (void)newX;
-            (void)newY;
-        }
-        if(tx02 >= 0 && tx02 <= 1)
-        {
-            F32 newX = Lerp(v0.pos.x, v2.pos.x, tx02);
-            F32 newY = Lerp(v0.pos.y, v2.pos.y, ty02);
-            (void)newX;
-            (void)newY;
-        }
+        dest->vertex[i] = src->vertex[i];
+    }
+}
+
+void ClipTriangleAxis(VertexList *vertexList, U32 axis, VertexList *result)
+{
+    if(vertexList->count == 0)
+    {
+        return;
     }
 
-    return result;
+    // NOTE: Clip against the first plain
+    Vertex *previusVertex = vertexList->vertex + (vertexList->count-1);
+    I8 previusInside = GetAxisV4F32(previusVertex->pos, axis) <= previusVertex->pos.w ? 1 : -1;
+    Vertex *currentVertex = vertexList->vertex;
+    while(currentVertex != vertexList->vertex + vertexList->count)
+    {
+        I8 currentIside = GetAxisV4F32(currentVertex->pos, axis) <= currentVertex->pos.w ? 1 : -1;
+        if((previusInside * currentIside) < 0)
+        {
+            // NOTE: Need to clip against plan = w 
+            F32 lerpAmt =  (previusVertex->pos.w - GetAxisV4F32(previusVertex->pos, axis)) /
+                          ((previusVertex->pos.w - GetAxisV4F32(previusVertex->pos, axis)) -
+                          (currentVertex->pos.w - GetAxisV4F32(currentVertex->pos, axis)));
+
+            result->vertex[result->count++] = VertexLerp(*previusVertex, *currentVertex, lerpAmt);
+        }
+
+        if(currentIside > 0)
+        {
+            result->vertex[result->count++] = *currentVertex; 
+        }
+
+        // NOTE: Advance the current vertex
+        previusInside = currentIside;
+        previusVertex = currentVertex;
+        currentVertex++;
+    }
+
+    CopyVertexList(vertexList, result);
+    result->count = 0;
+
+    if(vertexList->count == 0)
+    {
+        return;
+    }
+    // NOTE: Clip against opposite plain
+    previusVertex = vertexList->vertex + (vertexList->count-1);
+    previusInside = -GetAxisV4F32(previusVertex->pos, axis) <= previusVertex->pos.w ? 1 : -1;
+    currentVertex = vertexList->vertex;
+    while(currentVertex != vertexList->vertex + vertexList->count)
+    {
+        I8 currentIside = (-GetAxisV4F32(currentVertex->pos, axis)) <= currentVertex->pos.w ? 1 : -1;
+        if((previusInside * currentIside) < 0)
+        {
+            // NOTE: Need to clip against plan = w 
+            F32 lerpAmt =  (previusVertex->pos.w + GetAxisV4F32(previusVertex->pos, axis)) /
+                          ((previusVertex->pos.w + GetAxisV4F32(previusVertex->pos, axis)) -
+                          (currentVertex->pos.w + GetAxisV4F32(currentVertex->pos, axis)));
+
+            result->vertex[result->count++] = VertexLerp(*previusVertex, *currentVertex, lerpAmt);
+        }
+
+        if(currentIside > 0)
+        {
+            result->vertex[result->count++] = *currentVertex; 
+        }
+
+        // NOTE: Advance the current vertex
+        previusInside = currentIside;
+        previusVertex = currentVertex;
+        currentVertex++;
+    }
 }
 
 void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2)
@@ -316,6 +373,31 @@ void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vert
     ScanTriangle(buffer, bitmap, minVert, midVert, maxVert, handness);
 }
 
+void DrawTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2)
+{
+    VertexList vertexList = {0};
+    VertexList tmpList = {0};
+    
+    tmpList.vertex[tmpList.count++] = v0;
+    tmpList.vertex[tmpList.count++] = v1;
+    tmpList.vertex[tmpList.count++] = v2;
+
+    ClipTriangleAxis(&tmpList, 0, &vertexList);
+    tmpList.count = 0;
+    ClipTriangleAxis(&vertexList, 1, &tmpList);
+    vertexList.count = 0;
+    ClipTriangleAxis(&tmpList, 2, &vertexList);
+    tmpList.count = 0;
+    
+    if(vertexList.count > 0)
+    {
+        for(U32 i = 1; i < vertexList.count-1; ++i)
+        {
+            FillTriangle(buffer, bitmap, vertexList.vertex[0], vertexList.vertex[i], vertexList.vertex[i+1]);
+        }
+    }
+};
+
 V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
 {
     V4F32 result = _V4F32(v.x, v.y, v.z, v.w);
@@ -327,11 +409,11 @@ V4F32 ToScreenSpace(BackBuffer *buffer, V4F32 v)
         result.z /= result.w;
     }
     
-    I32 halfWidth = (I32)(0.5f*buffer->width);
-    I32 halfHeight = (I32)(0.5f*buffer->height);
+    F32 halfWidth = (0.5f * (F32)buffer->width);
+    F32 halfHeight = (0.5f * (F32)buffer->height);
     
-    result.x = (result.x*halfWidth) + halfWidth;
-    result.y = (result.y*-halfHeight) + halfHeight;
+    result.x = (result.x * halfWidth) + (halfWidth - 0.5f);
+    result.y = (result.y * -halfHeight) + (halfHeight - 0.5f);
 
     return result;
 }

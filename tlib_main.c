@@ -153,9 +153,10 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
         //v2.pos = MultM4F32V4F32(RotateXM4F32(angle), v2.pos);
 
         // NOTE: Translate the box
-        v0.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 5)), v0.pos);
-        v1.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 5)), v1.pos);
-        v2.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, 5)), v2.pos);
+        F32 testZ = SinF32(ToRadians(angle))*5 + 3;
+        v0.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, testZ)), v0.pos);
+        v1.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, testZ)), v1.pos);
+        v2.pos = MultM4F32V4F32(TranslateM4F32(_V3F32(0, 0, testZ)), v2.pos);
 
         // NOTE: Project vertices
         v0.pos = MultM4F32V4F32(projection, v0.pos);
@@ -163,7 +164,7 @@ void GameUpdateAndRender(BackBuffer *buffer, F32 dt)
         v2.pos = MultM4F32V4F32(projection, v2.pos);
         
         // NOTE: fille triangle
-        FillTriangle(buffer, &randomBitmap, v0, v1, v2);
+        DrawTriangle(buffer, &randomBitmap, v0, v1, v2);
     }
     angle += 50 * dt;
     if(angle > 360) angle = 0;

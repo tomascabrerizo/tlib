@@ -28,6 +28,7 @@ typedef struct
 } Vertex;
 
 Vertex _Vertex(F32 x, F32 y, F32 z, F32 red, F32 green, F32 blue, F32 u, F32 v);
+Vertex VertexLerp(Vertex v0, Vertex v1, F32 t);
 
 typedef struct {
     // NOTE: Color gradients
@@ -81,6 +82,13 @@ typedef struct
 Edge _Edge(Gradients *gradients, Vertex start, Vertex end, U32 minIndexY);
 void StepEdge(Edge *edge);
 
+#define MAX_VERTEX_LIST 10
+typedef struct
+{
+    Vertex vertex[MAX_VERTEX_LIST];
+    U32 count;
+} VertexList;
+
 void DrawPixel(BackBuffer *buffer, U32 x, U32 y, U8 red, U8 green, U8 blue);
 void CopyPixelFromBitmap(BackBuffer *buffer, Bitmap *bitmap, U32 x, U32 y, U32 srcX, U32 srcY);
 
@@ -90,6 +98,9 @@ void ScanLine(BackBuffer *buffer, Bitmap *bitmap, Gradients *gradients, Edge *le
 void ScanTriangle(BackBuffer *buffer, Bitmap *bitmap,
                   Vertex minVert, Vertex midVert, Vertex maxVert, B8 handness);
 
+void ClipTriangleAxis(VertexList *vertexList, U32 axis, VertexList *result);
+
 void FillTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2);
+void DrawTriangle(BackBuffer *buffer, Bitmap *bitmap, Vertex v0, Vertex v1, Vertex v2);
 
 #endif //TLIB_RENDER_H
