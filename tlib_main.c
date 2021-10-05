@@ -101,6 +101,12 @@ void ClearZBuffer(BackBuffer *buffer)
     }
 }
 
+// TODO: Move this into the math file
+V3F32 NormV3F32(V3F32 a)
+{
+    return DivV3F32(a, LenghtV3F32(a));
+}
+
 void GameInit(BackBuffer *buffer)
 {
     // NOTE: Init projection matrix
@@ -122,7 +128,7 @@ void GameInit(BackBuffer *buffer)
     Memory memory = PlatformCreateMemory();
     gameArena = CreateArena(&memory);
     testMesh = LoadObjFile(&gameArena, "data/monkey.obj");   
-
+    
     StarFieldInit(&gameStarField);
 }
 

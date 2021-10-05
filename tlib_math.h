@@ -36,7 +36,7 @@ typedef struct
     F32 z;
 } V3F32;
 
-typedef struct
+typedef struct 
 {
     F32 x;
     F32 y;

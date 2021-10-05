@@ -16,13 +16,12 @@ typedef struct
 typedef struct
 {
     V3F32 *vertex;
-    U32 vertexCount;
-
     V2F32 *texCoord;
-    U32 texCoordCount;
-
     U32 *indices;
     U32 *texIndices;
+    
+    U32 vertexCount;
+    U32 texCoordCount;
     U32 indicesCout;
 } ObjResult;
 
